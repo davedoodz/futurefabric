@@ -5,6 +5,7 @@ import CategoryTabs from "./components/CategoryTabs";
 import ProductGrid from "./components/ProductGrid";
 import CustomCursor from "./components/CustomCursor";
 import ProductFocusModal from "./components/ProductFocusModal";
+import SponsorLogos from "./components/SponsorLogos";
 import { setRotationSpeed } from "./components/SpriteViewer";
 import { CopyProvider, EditableText, useCopy } from "./lib/copy";
 import { PRODUCTS, type Category, type Product } from "./data/products";
@@ -63,6 +64,7 @@ export default function App() {
           <Header />
           <ProductGrid products={filtered} paused={focusedProduct !== null} onSelect={setFocusedProduct} />
         </main>
+        <SponsorLogos />
         <CategoryTabs active={category} onChange={setCategory} />
         <ProductFocusModal product={focusedProduct} onClose={() => setFocusedProduct(null)} />
       </div>

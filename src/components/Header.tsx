@@ -5,7 +5,7 @@ export default function Header() {
   return (
     <header className="site-header">
       <div className="site-header__wordmark">
-        <MorphLogo />
+        <MorphLogo size="0.75em" />
         <EditableText copyKey="site.title" defaultValue="FutureFabric" as="h1" />
       </div>
       <p className="site-header__tagline">

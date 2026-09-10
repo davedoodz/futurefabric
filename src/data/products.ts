@@ -19,6 +19,11 @@ export interface Product {
   category: Category;
 }
 
+export function gridSpriteSheet(product: Product) {
+  const filename = product.spriteSheet.slice(product.spriteSheet.lastIndexOf("/") + 1);
+  return `/spritesheets-36/grid/${filename}`;
+}
+
 // All sheets are 6 columns × 6 rows (36 square frames).
 export const PRODUCTS: Product[] = [
   { code: "PL01", spriteSheet: "/spritesheets-36/balenciaga-ephea-mycelium-coat-fw2022-spritesheet.webp", cardSpriteSheet: "/spritesheets-36/cards/balenciaga-ephea-mycelium-coat-fw2022-spritesheet.webp", alt: "Balenciaga Ephea mycelium coat, Fall/Winter 2022", category: "Plant-based cellulosic" },

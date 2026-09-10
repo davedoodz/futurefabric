@@ -1,5 +1,5 @@
 import { useDialKit } from "dialkit";
-import type { Product } from "../data/products";
+import { gridSpriteSheet, type Product } from "../data/products";
 import { EditableText } from "../lib/copy";
 import SpriteViewer from "./SpriteViewer";
 
@@ -25,12 +25,13 @@ interface Props {
 
 export default function ProductCard({ product, paused, onSelect }: Props) {
   const placement = useProductPlacement(product);
+  const spriteSheet = placement.scale >= 1.75 ? product.spriteSheet : gridSpriteSheet(product);
   const transform = `translate3d(${placement.x}cqw, ${-placement.y}cqh, ${placement.z}px) scale(${placement.scale})`;
   return (
     <article className="product-card" data-span={placement.scale >= 1.75 ? "2" : "1"}>
       <div className="product-card__image">
         <SpriteViewer
-          src={product.cardSpriteSheet}
+          src={spriteSheet}
           alt={product.alt}
           className="sprite-viewer--card"
           transform={transform}

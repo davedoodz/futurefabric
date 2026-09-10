@@ -11,7 +11,7 @@ function easeInOutCubic(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
-export default function MorphLogo({ size = 64 }: { size?: number }) {
+export default function MorphLogo({ size = 64 }: { size?: number | string }) {
   const [hovered, setHovered] = useState(false);
   const [d, setD] = useState(trianglePath());
   const progress = useRef(0); // 0 = triangle, 1 = rounded square, 2 = circle
@@ -62,8 +62,6 @@ export default function MorphLogo({ size = 64 }: { size?: number }) {
       aria-hidden="true"
     >
       <svg viewBox="0 0 64 64" width={size} height={size}>
-        {/* Static echo circle: same token as the custom cursor (#DDDDDD @ 50%, white stroke). */}
-        <circle cx={17} cy={47} r={13} className="morph-logo__echo" />
         <path d={d} fill="#000000" />
       </svg>
     </span>

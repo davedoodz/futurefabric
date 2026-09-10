@@ -155,7 +155,7 @@ export default function SpriteViewer({
             unload();
           }
         },
-        { rootMargin: "400px" },
+        { rootMargin: "100px 0px" },
       );
       observer.observe(element);
     }
