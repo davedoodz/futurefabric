@@ -62,17 +62,33 @@ body.has-custom-cursor * {
   will-change: transform;
 }
 
+.save-all-button {
+  position: fixed;
+  right: 24px;
+  z-index: 10000;
+  bottom: 24px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-ink);
+  border-radius: 999px;
+  background: var(--color-ink);
+  color: #ffffff;
+  font: 600 14px/1 var(--font-sans);
+  letter-spacing: -0.04em;
+  cursor: pointer;
+}
+
+.save-all-button:focus-visible,
+[contenteditable]:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 3px;
+}
+
 .morph-logo {
   display: inline-flex;
   flex-shrink: 0;
   cursor: pointer;
 }
 
-.morph-logo__echo {
-  fill: var(--color-cursor-fill);
-  stroke: #ffffff;
-  stroke-width: 1;
-}
 
 .page {
   min-height: 100%;
@@ -85,44 +101,101 @@ body.has-custom-cursor * {
   padding: 57px clamp(24px, 6vw, 108px) 96px;
 }
 
+.site-header,
+.product-grid {
+  width: min(100%, 1320px);
+  margin-inline: auto;
+}
+.sponsor-logos {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.sponsor-logo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 180px;
+  height: auto;
+  transform-origin: top left;
+}
+
+.sponsor-logo--arts {
+  width: 220px;
+}
+
+
 .site-header__wordmark {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
+  font-size: clamp(34px, 5vw, 53px);
 }
 
 .site-header__wordmark h1 {
   margin: 0;
-  font-size: clamp(34px, 5vw, 53px);
+  font-size: 1em;
   font-weight: 600;
-  letter-spacing: -0.08em;
-  line-height: 1;
+  letter-spacing: var(--layout-letter-spacing, -0.08em);
+  line-height: var(--layout-line-height, 1);
+  text-box: trim-both cap alphabetic;
 }
 
 .site-header__tagline {
   margin: 8px 0 0;
   font-size: clamp(16px, 2.2vw, 31px);
   font-weight: 600;
-  letter-spacing: -0.08em;
-  line-height: 1.1;
+  letter-spacing: var(--layout-letter-spacing, -0.08em);
+  line-height: var(--layout-line-height, 1.1);
   color: var(--color-mist);
 }
 
-/* Category filter — rotated pill rail pinned to the right edge, matching
-   the Paper file's 270deg-rotated tab strip on desktop. Collapses to a
-   horizontal scrolling row on narrow viewports. */
+/* Category filter — sticky pill layout controlled through DialKit. */
 .category-tabs {
+  position: fixed;
+  z-index: 20;
   display: flex;
-  flex-direction: column-reverse;
-  align-items: flex-end;
-  gap: 10px;
-  padding: 24px 20px;
-  flex-shrink: 0;
+  gap: var(--layout-element-spacing, 10px);
+  padding: 20px;
+  pointer-events: none;
+}
+
+.category-tabs[data-orientation="vertical"] {
+  flex-direction: column;
+}
+
+.category-tabs[data-orientation="horizontal"] {
+  flex-direction: row;
+  max-width: calc(100vw - 40px);
+  overflow-x: auto;
+}
+
+.category-tabs[data-corner="top-left"] {
+  top: 0;
+  left: 0;
+}
+
+.category-tabs[data-corner="top-right"] {
+  top: 0;
+  right: 0;
+}
+
+.category-tabs[data-corner="bottom-left"] {
+  bottom: 0;
+  left: 0;
+}
+
+.category-tabs[data-corner="bottom-right"] {
+  right: 0;
+  bottom: 0;
 }
 
 .category-tab {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
+  flex-shrink: 0;
   white-space: nowrap;
   border-radius: 999px;
   border: 1px solid #000000;
@@ -130,9 +203,19 @@ body.has-custom-cursor * {
   color: #000000;
   font-family: var(--font-sans);
   font-size: 14px;
-  letter-spacing: -0.08em;
+  letter-spacing: var(--layout-letter-spacing, -0.08em);
   padding: 16px 8px;
   cursor: pointer;
+  pointer-events: auto;
+}
+
+.category-tabs[data-orientation="vertical"] .category-tab {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.category-tabs[data-orientation="horizontal"] .category-tab {
+  padding: 6px 16px;
 }
 
 .category-tab[data-active="true"] {
@@ -141,28 +224,21 @@ body.has-custom-cursor * {
   border-color: #000000;
 }
 
-@media (max-width: 860px) {
-  .page {
-    flex-direction: column-reverse;
-  }
+@media (max-width: 560px) {
   .category-tabs {
-    flex-direction: row;
-    align-items: center;
-    overflow-x: auto;
-    padding: 12px 20px;
-  }
-  .category-tab {
-    writing-mode: horizontal-tb;
-    transform: none;
-    padding: 6px 16px;
+    padding: 12px;
   }
 }
 
 .product-grid {
   margin-top: 64px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 48px 24px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--layout-matrix-gap-y, 48px) var(--layout-matrix-gap-x, 24px);
+}
+
+.product-card[data-span="2"] {
+  grid-column: span 2;
 }
 
 .product-grid__empty {
@@ -183,13 +259,19 @@ body.has-custom-cursor * {
     max-width: 260px;
     margin-inline: auto;
   }
+  .product-card[data-span="2"] {
+    grid-column: span 1;
+  }
 }
 
 .product-card__image {
-  height: 220px;
+  width: min(100%, var(--layout-frame-width, 220px));
+  height: var(--layout-frame-height, 220px);
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  perspective: 900px;
+  container-type: size;
 }
 
 .sprite-viewer {
@@ -217,22 +299,22 @@ body.has-custom-cursor * {
 .product-card__code {
   margin: 0;
   font-size: 14px;
-  letter-spacing: -0.08em;
+  letter-spacing: var(--layout-letter-spacing, -0.08em);
   color: var(--color-mist);
 }
 
 .product-card__name {
-  margin: 4px 0 0;
+  margin: var(--layout-element-spacing, 4px) 0 0;
   font-size: 27px;
   font-weight: 600;
-  letter-spacing: -0.08em;
-  line-height: 1.1;
+  letter-spacing: var(--layout-letter-spacing, -0.08em);
+  line-height: var(--layout-line-height, 1.1);
 }
 
 .product-card__companies {
-  margin: 4px 0 0;
+  margin: var(--layout-element-spacing, 4px) 0 0;
   font-size: 18px;
-  letter-spacing: -0.08em;
+  letter-spacing: var(--layout-letter-spacing, -0.08em);
   color: var(--color-mist);
 }
 

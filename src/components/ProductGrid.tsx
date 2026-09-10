@@ -1,5 +1,6 @@
 import type { Product } from "../data/products";
 import ProductCard from "./ProductCard";
+import { EditableText } from "../lib/copy";
 
 interface Props {
   products: Product[];
@@ -9,7 +10,14 @@ interface Props {
 
 export default function ProductGrid({ products, paused, onSelect }: Props) {
   if (products.length === 0) {
-    return <p className="product-grid__empty">No products in this category yet.</p>;
+    return (
+      <EditableText
+        copyKey="catalog.empty"
+        defaultValue="No products in this category yet."
+        as="p"
+        className="product-grid__empty"
+      />
+    );
   }
 
   return (

@@ -1,16 +1,17 @@
 import MorphLogo from "./MorphLogo";
+import { EditableText } from "../lib/copy";
 
 export default function Header() {
   return (
     <header className="site-header">
       <div className="site-header__wordmark">
-        <MorphLogo />
-        <h1>FutureFabric</h1>
+        <MorphLogo size="0.75em" />
+        <EditableText copyKey="site.title" defaultValue="FutureFabric" as="h1" />
       </div>
       <p className="site-header__tagline">
-        An Open-Source Catalog
+        <EditableText copyKey="site.tagline.line1" defaultValue="An Open-Source Catalog" />
         <br />
-        of Bio-based Fashion Designs
+        <EditableText copyKey="site.tagline.line2" defaultValue="of Bio-based Fashion Designs" />
       </p>
     </header>
   );

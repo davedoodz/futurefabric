@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, type PointerEvent as ReactPointerEvent } from "react";
 
 const FRAME_COLUMNS = 6;
-const FRAME_ROWS = 4;
+const FRAME_ROWS = 6;
 const FRAME_COUNT = FRAME_COLUMNS * FRAME_ROWS;
-const FRAME_INTERVAL_MS = 360;
-const DRAG_PIXELS_PER_FRAME = 12;
+const FRAME_INTERVAL_MS = 240;
+const TICK_MIN_INTERVAL_MS = 16;
+const DRAG_PIXELS_PER_FRAME = 8;
 const DRAG_THRESHOLD_PX = 6;
 const LONG_PRESS_MS = 300;
 const BACKGROUND_SIZE = `${FRAME_COLUMNS * 100}% ${FRAME_ROWS * 100}%`;
@@ -18,21 +19,32 @@ type FrameSubscriber = () => void;
 
 const frameSubscribers = new Set<FrameSubscriber>();
 let frameTimer: number | null = null;
+let rotationSpeed = 1;
+
+function restartFrameTicker() {
+  if (frameTimer !== null) {
+    window.clearInterval(frameTimer);
+    frameTimer = null;
+  }
+  if (frameSubscribers.size > 0 && rotationSpeed > 0) {
+    frameTimer = window.setInterval(() => {
+      for (const callback of frameSubscribers) callback();
+    }, Math.max(TICK_MIN_INTERVAL_MS, FRAME_INTERVAL_MS / rotationSpeed));
+  }
+}
+
+export function setRotationSpeed(speed: number) {
+  rotationSpeed = Math.max(0, speed);
+  restartFrameTicker();
+}
 
 function subscribeToFrameTicker(subscriber: FrameSubscriber) {
   frameSubscribers.add(subscriber);
-  if (frameTimer === null) {
-    frameTimer = window.setInterval(() => {
-      for (const callback of frameSubscribers) callback();
-    }, FRAME_INTERVAL_MS);
-  }
+  restartFrameTicker();
 
   return () => {
     frameSubscribers.delete(subscriber);
-    if (frameSubscribers.size === 0 && frameTimer !== null) {
-      window.clearInterval(frameTimer);
-      frameTimer = null;
-    }
+    if (frameSubscribers.size === 0) restartFrameTicker();
   };
 }
 
@@ -43,6 +55,7 @@ interface Props {
   eager?: boolean;
   paused?: boolean;
   onActivate?: () => void;
+  transform?: string;
 }
 
 interface DragStart {
@@ -59,6 +72,7 @@ export default function SpriteViewer({
   eager = false,
   paused = false,
   onActivate,
+  transform,
 }: Props) {
   const elementRef = useRef<HTMLButtonElement>(null);
   const frameRef = useRef(0);
@@ -141,7 +155,7 @@ export default function SpriteViewer({
             unload();
           }
         },
-        { rootMargin: "400px" },
+        { rootMargin: "100px 0px" },
       );
       observer.observe(element);
     }
@@ -195,7 +209,7 @@ export default function SpriteViewer({
       ref={elementRef}
       type="button"
       className={`sprite-viewer ${className}`}
-      style={{ backgroundSize: BACKGROUND_SIZE }}
+      style={{ backgroundSize: BACKGROUND_SIZE, transform }}
       aria-label={onActivate ? `View ${alt} full screen` : `Drag to rotate ${alt}`}
       onPointerEnter={(event) => {
         if (event.pointerType === "mouse") hoveredRef.current = true;
