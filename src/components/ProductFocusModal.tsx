@@ -28,10 +28,15 @@ export default function ProductFocusModal({ product, onClose }: Props) {
 
   useEffect(() => {
     const dialog = dialogRef.current;
+    document.body.classList.toggle("modal-open", Boolean(product));
     if (product && dialog && !dialog.open) {
       setClosing(false);
       dialog.showModal();
     }
+
+    return () => {
+      document.body.classList.remove("modal-open");
+    };
   }, [product]);
 
   useEffect(() => clearCloseTimeout, []);

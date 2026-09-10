@@ -30,6 +30,10 @@ export default function App() {
     {
       letterSpacing: [-0.08, -0.2, 0.1, 0.01],
       lineHeight: [1.1, 0.8, 2, 0.01],
+      wordmarkGap: [12, 0, 80, 1],
+      titleSubtitleGap: [8, 0, 80, 1],
+      subtitlePillsGap: [24, 0, 120, 1],
+      pillsGalleryGap: [64, 0, 200, 1],
       elementSpacing: [4, 0, 32, 1],
       matrixGapX: [24, 0, 96, 1],
       matrixGapY: [48, 0, 128, 1],
@@ -39,15 +43,20 @@ export default function App() {
     { id: "catalog-layout", persist: true },
   );
   const [category, setCategory] = useState<Category>("Plant-based cellulosic");
-  const [focusedProduct, setFocusedProduct] = useState<Product | null>(null);
+  const [darkMode, setDarkMode] = useState(false);
   const filtered = useMemo(() => PRODUCTS.filter((p) => p.category === category), [category]);
-
+  const [focusedProduct, setFocusedProduct] = useState<Product | null>(null);
   useEffect(() => {
     setRotationSpeed(rotation.speed);
   }, [rotation.speed]);
+
   const layoutStyle = {
     "--layout-letter-spacing": `${layout.letterSpacing}em`,
     "--layout-line-height": layout.lineHeight,
+    "--layout-wordmark-gap": `${layout.wordmarkGap}px`,
+    "--layout-title-subtitle-gap": `${layout.titleSubtitleGap}px`,
+    "--layout-subtitle-pills-gap": `${layout.subtitlePillsGap}px`,
+    "--layout-pills-gallery-gap": `${layout.pillsGalleryGap}px`,
     "--layout-element-spacing": `${layout.elementSpacing}px`,
     "--layout-matrix-gap-x": `${layout.matrixGapX}px`,
     "--layout-matrix-gap-y": `${layout.matrixGapY}px`,
@@ -56,16 +65,16 @@ export default function App() {
   } as CSSProperties;
   return (
     <CopyProvider>
-      <div className="page" style={layoutStyle}>
+      <div className="page" data-dark-mode={darkMode} style={layoutStyle}>
         <DialRoot defaultOpen productionEnabled />
         <SaveAllButton />
         <CustomCursor />
         <main className="page__content">
-          <Header />
+          <Header darkMode={darkMode} onToggleDarkMode={() => setDarkMode((current) => !current)} />
+          <CategoryTabs active={category} onChange={setCategory} />
           <ProductGrid products={filtered} paused={focusedProduct !== null} onSelect={setFocusedProduct} />
         </main>
         <SponsorLogos />
-        <CategoryTabs active={category} onChange={setCategory} />
         <ProductFocusModal product={focusedProduct} onClose={() => setFocusedProduct(null)} />
       </div>
     </CopyProvider>

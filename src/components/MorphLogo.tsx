@@ -11,7 +11,13 @@ function easeInOutCubic(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
-export default function MorphLogo({ size = 64 }: { size?: number | string }) {
+interface Props {
+  size?: number | string;
+  active?: boolean;
+  onActivate?: () => void;
+}
+
+export default function MorphLogo({ size = 64, active = false, onActivate }: Props) {
   const [hovered, setHovered] = useState(false);
   const [d, setD] = useState(trianglePath());
   const progress = useRef(0); // 0 = triangle, 1 = rounded square, 2 = circle
@@ -56,14 +62,32 @@ export default function MorphLogo({ size = 64 }: { size?: number | string }) {
   return (
     <span
       className="morph-logo"
+      data-active={active}
       style={{ width: size, height: size }}
-      onMouseEnter={() => setHovered(true)}
+      onMouseEnter={() => !active && setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      aria-hidden="true"
+      onClick={onActivate}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onActivate?.();
+        }
+      }}
+      role={onActivate ? "button" : undefined}
+      tabIndex={onActivate ? 0 : undefined}
+      aria-label={onActivate ? "Toggle dark mode" : undefined}
+      aria-pressed={onActivate ? active : undefined}
     >
-      <svg viewBox="0 0 64 64" width={size} height={size}>
+      <svg className="morph-logo__svg" viewBox="0 0 64 64" width={size} height={size}>
         <path d={d} fill="#000000" />
       </svg>
+      <span className="morph-logo__cluster" aria-hidden="true">
+        <span className="morph-logo__circle morph-logo__circle--one" />
+        <span className="morph-logo__circle morph-logo__circle--two" />
+        <span className="morph-logo__circle morph-logo__circle--three" />
+        <span className="morph-logo__circle morph-logo__circle--four" />
+        <span className="morph-logo__circle morph-logo__circle--five" />
+      </span>
     </span>
   );
 }

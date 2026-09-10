@@ -5,15 +5,23 @@ import { EditableText } from "../lib/copy";
 import SpriteViewer from "./SpriteViewer";
 
 const PLACEMENT_LIMIT = 40;
+const DEFAULT_PLACEMENTS: Record<string, { x: number; y: number; z: number; scale: number }> = {
+  PL01: { x: -11, y: 5, z: 0, scale: 1.38 },
+  PL02: { x: -25, y: 1, z: 0, scale: 1.35 },
+  PL03: { x: -25, y: 17, z: 0, scale: 1.33 },
+  PL04: { x: -26, y: 0, z: 0, scale: 1 },
+};
+
 
 function useProductPlacement(product: Product) {
+  const defaults = DEFAULT_PLACEMENTS[product.code] ?? { x: 0, y: 0, z: 0, scale: 1 };
   return useDialKit(
     `Product ${product.code}`,
     {
-      x: [0, -PLACEMENT_LIMIT, PLACEMENT_LIMIT, 1],
-      y: [0, -PLACEMENT_LIMIT, PLACEMENT_LIMIT, 1],
-      z: [0, -400, 400, 1],
-      scale: [1, 0.5, 3, 0.01],
+      x: [defaults.x, -PLACEMENT_LIMIT, PLACEMENT_LIMIT, 1],
+      y: [defaults.y, -PLACEMENT_LIMIT, PLACEMENT_LIMIT, 1],
+      z: [defaults.z, -400, 400, 1],
+      scale: [defaults.scale, 0.5, 3, 0.01],
     },
     { id: `product-placement-${product.code}`, persist: true },
   );
