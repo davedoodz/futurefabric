@@ -1,0 +1,221 @@
+@font-face {
+  font-family: "Suisse Int'l";
+  src: local("Suisse Int'l"), local("SuisseIntl"), local("SuisseIntl-Regular");
+  font-weight: 400;
+}
+@font-face {
+  font-family: "Suisse Int'l";
+  src: local("Suisse Int'l SemiBold"), local("SuisseIntl-SemiBold");
+  font-weight: 600;
+}
+
+:root {
+  --font-sans: "Suisse Int'l", "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+  --color-ink: #000000;
+  --color-mist: #d8d8d8;
+  --color-cursor-fill: rgba(221, 221, 221, 0.5);
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: #ffffff;
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Selection: black text on the brand gray, replacing the default blue OS highlight. */
+::selection {
+  background: var(--color-mist);
+  color: #000000;
+}
+
+body.has-custom-cursor,
+body.has-custom-cursor * {
+  cursor: none;
+}
+
+.custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 29px;
+  height: 29px;
+  border-radius: 50%;
+  background: var(--color-cursor-fill);
+  outline: 1px solid #ffffff;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  will-change: transform;
+}
+
+.morph-logo {
+  display: inline-flex;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.morph-logo__echo {
+  fill: var(--color-cursor-fill);
+  stroke: #ffffff;
+  stroke-width: 1;
+}
+
+.page {
+  min-height: 100%;
+  display: flex;
+}
+
+.page__content {
+  flex: 1;
+  min-width: 0;
+  padding: 57px clamp(24px, 6vw, 108px) 96px;
+}
+
+.site-header__wordmark {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.site-header__wordmark h1 {
+  margin: 0;
+  font-size: clamp(34px, 5vw, 53px);
+  font-weight: 600;
+  letter-spacing: -0.08em;
+  line-height: 1;
+}
+
+.site-header__tagline {
+  margin: 8px 0 0;
+  font-size: clamp(16px, 2.2vw, 31px);
+  font-weight: 600;
+  letter-spacing: -0.08em;
+  line-height: 1.1;
+  color: var(--color-mist);
+}
+
+/* Category filter — rotated pill rail pinned to the right edge, matching
+   the Paper file's 270deg-rotated tab strip on desktop. Collapses to a
+   horizontal scrolling row on narrow viewports. */
+.category-tabs {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 24px 20px;
+  flex-shrink: 0;
+}
+
+.category-tab {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  border-radius: 999px;
+  border: 1px solid #000000;
+  background: #ffffff;
+  color: #000000;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  letter-spacing: -0.08em;
+  padding: 16px 8px;
+  cursor: pointer;
+}
+
+.category-tab[data-active="true"] {
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
+}
+
+@media (max-width: 860px) {
+  .page {
+    flex-direction: column-reverse;
+  }
+  .category-tabs {
+    flex-direction: row;
+    align-items: center;
+    overflow-x: auto;
+    padding: 12px 20px;
+  }
+  .category-tab {
+    writing-mode: horizontal-tb;
+    transform: none;
+    padding: 6px 16px;
+  }
+}
+
+.product-grid {
+  margin-top: 64px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 48px 24px;
+}
+
+.product-grid__empty {
+  margin-top: 64px;
+  color: var(--color-mist);
+  font-size: 18px;
+}
+
+@media (max-width: 1100px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .product-grid {
+    grid-template-columns: 1fr;
+    max-width: 260px;
+    margin-inline: auto;
+  }
+}
+
+.product-card__image {
+  height: 220px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.product-card__image img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.product-card__code {
+  margin: 0;
+  font-size: 14px;
+  letter-spacing: -0.08em;
+  color: var(--color-mist);
+}
+
+.product-card__name {
+  margin: 4px 0 0;
+  font-size: 27px;
+  font-weight: 600;
+  letter-spacing: -0.08em;
+  line-height: 1.1;
+}
+
+.product-card__companies {
+  margin: 4px 0 0;
+  font-size: 18px;
+  letter-spacing: -0.08em;
+  color: var(--color-mist);
+}
