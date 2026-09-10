@@ -1,4 +1,5 @@
 import { CATEGORIES, type Category } from "../data/products";
+import { EditableText } from "../lib/copy";
 
 interface Props {
   active: Category;
@@ -16,7 +17,7 @@ export default function CategoryTabs({ active, onChange }: Props) {
           data-active={category === active}
           onClick={() => onChange(category)}
         >
-          {category}
+          <EditableText copyKey={`category.${category}`} defaultValue={category} />
         </button>
       ))}
     </nav>

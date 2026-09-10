@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import type { Product } from "../data/products";
+import { EditableText } from "../lib/copy";
 import SpriteViewer from "./SpriteViewer";
 
 // Buffer above the 220ms `focus-product-out` CSS animation (index.css) so the
@@ -94,7 +95,7 @@ export default function ProductFocusModal({ product, onClose }: Props) {
             eager
           />
           <button type="button" className="product-focus__close" onClick={requestClose} aria-label="Close full-screen view">
-            Close
+            <EditableText copyKey="modal.close" defaultValue="Close" />
           </button>
         </div>
       ) : null}

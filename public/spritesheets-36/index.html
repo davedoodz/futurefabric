@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Future Fabric — 36-frame preview</title>
+<style>
+  *{box-sizing:border-box}body{margin:0;background:#141714;color:#f1f2eb;font:15px system-ui,sans-serif}
+  main{max-width:1000px;margin:auto;padding:28px}h1{font-size:28px;font-weight:500;letter-spacing:-.04em;margin:0 0 20px}
+  .controls{display:flex;gap:12px;flex-wrap:wrap;align-items:end}label{display:grid;gap:6px;font-size:12px;color:#b5bdb2}
+  select,button{font:inherit;color:inherit;background:#272e26;border:1px solid #65705e;border-radius:8px;padding:10px}
+  select{max-width:min(520px,85vw)}button{cursor:pointer}button:focus-visible,select:focus-visible,canvas:focus-visible{outline:2px solid #d5f36d;outline-offset:4px}
+  .stage{margin:22px 0 12px;border-radius:16px;background:radial-gradient(ellipse,#363d34,#1e231c);display:grid;place-items:center}
+  .stage.light{background:#eeeae2}.stage.checker{background:conic-gradient(#ddd 25%,#fff 0 50%,#ddd 0 75%,#fff 0) 0 0/24px 24px}
+  canvas{display:block;width:min(100%,720px);aspect-ratio:1;cursor:grab;touch-action:pan-y}
+  canvas.dragging{cursor:grabbing}footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#b5bdb2;font-size:12px}
+  #status{min-height:1.5em;color:#d5f36d}a{color:#d5f36d}
+</style>
+<main>
+  <h1>Future Fabric · 360° preview</h1>
+  <div class="controls">
+    <label>Object<select id="product"></select></label>
+    <label>Image size<select id="quality"><option value="full">Detail · 768px/frame</option><option value="cards">Card · 256px/frame</option></select></label>
+    <label>Background<select id="background"><option value="">Dark</option><option value="light">Light</option><option value="checker">Transparency grid</option></select></label>
+    <button id="play" type="button" aria-pressed="false">Auto rotate</button>
+  </div>
+  <p id="status" role="status">Loading…</p>
+  <div class="stage" id="stage"><canvas id="viewer" width="768" height="768" tabindex="0" role="img" aria-label="Drag horizontally or use arrow keys to rotate"></canvas></div>
+  <footer><span>Drag horizontally · ← → to turn</span><span id="counter">Frame 01 / 36</span></footer>
+</main>
+<script src="manifest.js"></script>
+<script>
+  const manifest=window.SPRITE_MANIFEST;
+  const product=document.querySelector('#product'),quality=document.querySelector('#quality'),viewer=document.querySelector('#viewer');
+  const status=document.querySelector('#status'),counter=document.querySelector('#counter'),play=document.querySelector('#play');
+  const ctx=viewer.getContext('2d');
+  let frame=0,img=null,drag=null,playing=false,last=0,loadId=0;
+  for(const p of manifest.products){const option=document.createElement('option');option.value=p.id;option.textContent=p.name;product.append(option)}
+  function draw(next=frame){
+    frame=(next%36+36)%36;
+    ctx.clearRect(0,0,viewer.width,viewer.height);
+    if(img){const cell=img.naturalWidth/6;ctx.drawImage(img,(frame%6)*cell,Math.floor(frame/6)*cell,cell,cell,0,0,viewer.width,viewer.height)}
+    counter.textContent=`Frame ${String(frame+1).padStart(2,'0')} / 36 · ${frame*10}°`;
+  }
+  async function load(){
+    const id=++loadId,p=manifest.products.find(p=>p.id===product.value),isCard=quality.value==='cards';
+    img=null;draw(0);status.textContent='Loading image…';
+    const image=new Image();image.src=isCard?p.cardSrc:p.src;
+    try{await image.decode();if(id!==loadId)return;img=image;draw();status.textContent=`${p.name} · ${((isCard?p.cardBytes:p.bytes)/1024).toFixed(0)} KB`;viewer.setAttribute('aria-label',`${p.name}. Drag horizontally or use arrow keys to rotate.`)}
+    catch{if(id===loadId)status.textContent='Could not load the sprite sheet.'}
+  }
+  viewer.addEventListener('pointerdown',e=>{if(e.button!==0||drag)return;drag={id:e.pointerId,x:e.clientX,frame};viewer.setPointerCapture(e.pointerId);viewer.classList.add('dragging')});
+  viewer.addEventListener('pointermove',e=>{if(drag?.id===e.pointerId)draw(drag.frame-Math.round((e.clientX-drag.x)/8))});
+  function stop(e){if(drag?.id===e.pointerId){drag=null;viewer.classList.remove('dragging')}}
+  for(const event of ['pointerup','pointercancel','lostpointercapture'])viewer.addEventListener(event,stop);
+  viewer.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();draw(frame+(e.key==='ArrowLeft'?-1:1))}});
+  play.addEventListener('click',()=>{playing=!playing;play.textContent=playing?'Pause':'Auto rotate';play.setAttribute('aria-pressed',String(playing))});
+  function tick(time){if(playing&&!drag&&!document.hidden&&time-last>=100){draw(frame+1);last=time}requestAnimationFrame(tick)}
+  product.addEventListener('change',load);quality.addEventListener('change',load);
+  document.querySelector('#background').addEventListener('change',e=>document.querySelector('#stage').className='stage '+e.target.value);
+  requestAnimationFrame(tick);load();
+</script>
+</html>
