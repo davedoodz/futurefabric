@@ -100,6 +100,12 @@ body.has-custom-cursor * {
   min-width: 0;
   padding: 57px clamp(24px, 6vw, 108px) 96px;
 }
+
+.site-header,
+.product-grid {
+  width: min(100%, 1320px);
+  margin-inline: auto;
+}
 .sponsor-logos {
   position: fixed;
   inset: 0;
@@ -148,21 +154,48 @@ body.has-custom-cursor * {
   color: var(--color-mist);
 }
 
-/* Category filter — rotated pill rail pinned to the right edge, matching
-   the Paper file's 270deg-rotated tab strip on desktop. Collapses to a
-   horizontal scrolling row on narrow viewports. */
+/* Category filter — sticky pill layout controlled through DialKit. */
 .category-tabs {
+  position: fixed;
+  z-index: 20;
   display: flex;
-  flex-direction: column-reverse;
-  align-items: flex-end;
-  gap: 10px;
-  padding: 24px 20px;
   gap: var(--layout-element-spacing, 10px);
+  padding: 20px;
+  pointer-events: none;
+}
+
+.category-tabs[data-orientation="vertical"] {
+  flex-direction: column;
+}
+
+.category-tabs[data-orientation="horizontal"] {
+  flex-direction: row;
+  max-width: calc(100vw - 40px);
+  overflow-x: auto;
+}
+
+.category-tabs[data-corner="top-left"] {
+  top: 0;
+  left: 0;
+}
+
+.category-tabs[data-corner="top-right"] {
+  top: 0;
+  right: 0;
+}
+
+.category-tabs[data-corner="bottom-left"] {
+  bottom: 0;
+  left: 0;
+}
+
+.category-tabs[data-corner="bottom-right"] {
+  right: 0;
+  bottom: 0;
 }
 
 .category-tab {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
+  flex-shrink: 0;
   white-space: nowrap;
   border-radius: 999px;
   border: 1px solid #000000;
@@ -173,6 +206,16 @@ body.has-custom-cursor * {
   letter-spacing: var(--layout-letter-spacing, -0.08em);
   padding: 16px 8px;
   cursor: pointer;
+  pointer-events: auto;
+}
+
+.category-tabs[data-orientation="vertical"] .category-tab {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.category-tabs[data-orientation="horizontal"] .category-tab {
+  padding: 6px 16px;
 }
 
 .category-tab[data-active="true"] {
@@ -181,20 +224,9 @@ body.has-custom-cursor * {
   border-color: #000000;
 }
 
-@media (max-width: 860px) {
-  .page {
-    flex-direction: column-reverse;
-  }
+@media (max-width: 560px) {
   .category-tabs {
-    flex-direction: row;
-    align-items: center;
-    overflow-x: auto;
-    padding: 12px 20px;
-  }
-  .category-tab {
-    writing-mode: horizontal-tb;
-    transform: none;
-    padding: 6px 16px;
+    padding: 12px;
   }
 }
 

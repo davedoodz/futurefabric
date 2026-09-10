@@ -15,23 +15,35 @@ function useLogoPlacement(id: string, defaults: { x: number; y: number; scale: n
 }
 
 export default function SponsorLogos() {
+  const visibility = useDialKit(
+    "MIT program logos",
+    {
+      designXVisible: true,
+      artsVisible: true,
+    },
+    { id: "mit-program-logo-visibility", persist: true },
+  );
   const designX = useLogoPlacement("MIT DesignX", { x: 8, y: 72, scale: 1 });
   const arts = useLogoPlacement("MIT Arts Startup Incubator", { x: 68, y: 72, scale: 0.48 });
 
   return (
     <div className="sponsor-logos" aria-label="MIT program logos">
-      <img
-        className="sponsor-logo sponsor-logo--designx"
-        src="/logos/mit-designx.png"
-        alt="MIT DesignX"
-        style={{ transform: `translate3d(${designX.x}vw, ${designX.y}vh, 0) scale(${designX.scale})` }}
-      />
-      <img
-        className="sponsor-logo sponsor-logo--arts"
-        src="/logos/mit-arts.png"
-        alt="Arts at MIT — Startup Incubator"
-        style={{ transform: `translate3d(${arts.x}vw, ${arts.y}vh, 0) scale(${arts.scale})` }}
-      />
+      {visibility.designXVisible ? (
+        <img
+          className="sponsor-logo sponsor-logo--designx"
+          src="/logos/mit-designx.png"
+          alt="MIT DesignX"
+          style={{ transform: `translate3d(${designX.x}vw, ${designX.y}vh, 0) scale(${designX.scale})` }}
+        />
+      ) : null}
+      {visibility.artsVisible ? (
+        <img
+          className="sponsor-logo sponsor-logo--arts"
+          src="/logos/mit-arts.png"
+          alt="Arts at MIT — Startup Incubator"
+          style={{ transform: `translate3d(${arts.x}vw, ${arts.y}vh, 0) scale(${arts.scale})` }}
+        />
+      ) : null}
     </div>
   );
 }
