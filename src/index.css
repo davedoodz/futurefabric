@@ -56,7 +56,7 @@ body.has-custom-cursor * {
   background: var(--color-cursor-fill);
   outline: 1px solid #ffffff;
   pointer-events: none;
-  z-index: 9999;
+  z-index: 10003;
   opacity: 0;
   transition: opacity 0.15s ease;
   will-change: transform;
@@ -239,6 +239,16 @@ body.has-custom-cursor * {
 
 .product-card[data-span="2"] {
   grid-column: span 2;
+}
+
+.product-card[draggable="true"] {
+  cursor: grab;
+}
+
+.product-card[draggable="true"]:active,
+.product-card[data-dragging="true"] {
+  cursor: grabbing;
+  opacity: 0.55;
 }
 
 .product-grid__empty {

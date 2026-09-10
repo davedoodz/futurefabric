@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import type { Product } from "../data/products";
 import ProductCard from "./ProductCard";
 import { EditableText } from "../lib/copy";
@@ -9,7 +10,15 @@ interface Props {
 }
 
 export default function ProductGrid({ products, paused, onSelect }: Props) {
-  if (products.length === 0) {
+  const [orderedProducts, setOrderedProducts] = useState(products);
+  const [draggedCode, setDraggedCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    setOrderedProducts(products);
+    setDraggedCode(null);
+  }, [products]);
+
+  if (orderedProducts.length === 0) {
     return (
       <EditableText
         copyKey="catalog.empty"
@@ -20,10 +29,34 @@ export default function ProductGrid({ products, paused, onSelect }: Props) {
     );
   }
 
+  const swapProducts = (targetCode: string) => {
+    if (!draggedCode || draggedCode === targetCode) return;
+    setOrderedProducts((current) => {
+      const next = [...current];
+      const draggedIndex = next.findIndex((product) => product.code === draggedCode);
+      const targetIndex = next.findIndex((product) => product.code === targetCode);
+      if (draggedIndex < 0 || targetIndex < 0) return current;
+      [next[draggedIndex], next[targetIndex]] = [next[targetIndex], next[draggedIndex]];
+      return next;
+    });
+    setDraggedCode(null);
+  };
+
   return (
     <div className="product-grid">
-      {products.map((product) => (
-        <ProductCard key={product.code} product={product} paused={paused} onSelect={onSelect} />
+      {orderedProducts.map((product) => (
+        <ProductCard
+          key={product.code}
+          product={product}
+          paused={paused}
+          onSelect={onSelect}
+          draggable
+          isDragging={draggedCode === product.code}
+          onDragStart={() => setDraggedCode(product.code)}
+          onDragEnd={() => setDraggedCode(null)}
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={() => swapProducts(product.code)}
+        />
       ))}
     </div>
   );
