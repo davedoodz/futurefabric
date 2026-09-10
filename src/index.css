@@ -192,10 +192,26 @@ body.has-custom-cursor * {
   justify-content: center;
 }
 
-.product-card__image img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+.sprite-viewer {
+  display: block;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  appearance: none;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+
+.sprite-viewer:active {
+  cursor: grabbing;
+}
+
+.sprite-viewer--card {
+  width: min(100%, 220px);
 }
 
 .product-card__code {
@@ -218,4 +234,116 @@ body.has-custom-cursor * {
   font-size: 18px;
   letter-spacing: -0.08em;
   color: var(--color-mist);
+}
+
+.product-focus {
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background: transparent;
+}
+
+.product-focus[open] {
+  display: grid;
+  place-items: center;
+}
+
+.product-focus::backdrop {
+  background: rgba(255, 255, 255, 0.32);
+  backdrop-filter: blur(14px);
+  animation: focus-backdrop-in 260ms ease-out both;
+}
+
+.product-focus__content {
+  position: relative;
+  width: min(82vmin, 760px);
+  animation: focus-product-in 260ms cubic-bezier(0.215, 0.61, 0.355, 1) both;
+}
+
+.sprite-viewer--focus {
+  width: 100%;
+}
+
+.product-focus__close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid #000000;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #000000;
+  font: 400 14px/1 var(--font-sans);
+  letter-spacing: -0.04em;
+}
+
+.product-focus[data-closing="true"] .product-focus__content {
+  animation: focus-product-out 220ms ease-in both;
+}
+
+.product-focus[data-closing="true"]::backdrop {
+  animation: focus-backdrop-out 220ms ease-in both;
+}
+
+body.has-custom-cursor .product-focus,
+body.has-custom-cursor .product-focus *:not(.sprite-viewer) {
+  cursor: default;
+}
+
+body.has-custom-cursor .product-focus .sprite-viewer {
+  cursor: grab;
+}
+
+body.has-custom-cursor .product-focus .sprite-viewer:active {
+  cursor: grabbing;
+}
+
+@keyframes focus-product-in {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes focus-product-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+@keyframes focus-backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes focus-backdrop-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-focus::backdrop,
+  .product-focus__content,
+  .product-focus[data-closing="true"]::backdrop,
+  .product-focus[data-closing="true"] .product-focus__content {
+    animation: none;
+  }
 }
