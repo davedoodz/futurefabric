@@ -7,12 +7,16 @@ interface LayoutPayload {
   storage: Record<string, string>;
 }
 
+function isManagedStorageKey(key: string) {
+  return key === COPY_STORAGE_KEY || key.startsWith(DIALKIT_STORAGE_PREFIX) || key.startsWith(ORDER_STORAGE_PREFIX);
+}
+
 function collectStorage() {
   const storage: Record<string, string> = {};
 
   for (let index = 0; index < window.localStorage.length; index += 1) {
     const key = window.localStorage.key(index);
-    if (!key || (key !== COPY_STORAGE_KEY && !key.startsWith(DIALKIT_STORAGE_PREFIX) && !key.startsWith(ORDER_STORAGE_PREFIX))) continue;
+    if (!key || !isManagedStorageKey(key)) continue;
     const value = window.localStorage.getItem(key);
     if (value !== null) storage[key] = value;
   }
@@ -27,10 +31,16 @@ export async function hydrateSharedLayout() {
     const payload = (await response.json()) as Partial<LayoutPayload>;
     if (payload.version !== 1 || !payload.storage) return;
 
-    for (const [key, value] of Object.entries(payload.storage)) {
-      if (key === COPY_STORAGE_KEY || key.startsWith(DIALKIT_STORAGE_PREFIX) || key.startsWith(ORDER_STORAGE_PREFIX)) {
-        window.localStorage.setItem(key, value);
+    const sharedKeys = new Set(Object.keys(payload.storage));
+    for (let index = window.localStorage.length - 1; index >= 0; index -= 1) {
+      const key = window.localStorage.key(index);
+      if (key && isManagedStorageKey(key) && !sharedKeys.has(key)) {
+        window.localStorage.removeItem(key);
       }
+    }
+
+    for (const [key, value] of Object.entries(payload.storage)) {
+      if (isManagedStorageKey(key)) window.localStorage.setItem(key, value);
     }
   } catch {
     // Keep the local DialKit state when shared storage is unavailable.
