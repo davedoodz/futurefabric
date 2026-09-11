@@ -1,22 +1,44 @@
 import { useEffect, useState } from "react";
-import type { Product } from "../data/products";
+import type { Product, Category } from "../data/products";
 import ProductCard from "./ProductCard";
 import { EditableText } from "../lib/copy";
+import { scheduleSharedLayoutSave } from "../lib/layoutPersistence";
+
+const ORDER_STORAGE_PREFIX = "futurefabric-order:";
 
 interface Props {
+  category: Category;
   products: Product[];
   paused: boolean;
+  grabEnabled: boolean;
   onSelect: (product: Product) => void;
 }
 
-export default function ProductGrid({ products, paused, onSelect }: Props) {
-  const [orderedProducts, setOrderedProducts] = useState(products);
+function readStoredOrder(category: Category, products: Product[]) {
+  try {
+    const stored = window.localStorage.getItem(`${ORDER_STORAGE_PREFIX}${category}`);
+    const codes = stored ? (JSON.parse(stored) as unknown) : [];
+    if (!Array.isArray(codes)) return products;
+
+    const byCode = new Map(products.map((product) => [product.code, product]));
+    const ordered = codes.flatMap((code) => {
+      const product = typeof code === "string" ? byCode.get(code) : undefined;
+      if (product) byCode.delete(product.code);
+      return product ? [product] : [];
+    });
+    return [...ordered, ...byCode.values()];
+  } catch {
+    return products;
+  }
+}
+export default function ProductGrid({ category, products, paused, grabEnabled, onSelect }: Props) {
+  const [orderedProducts, setOrderedProducts] = useState(() => readStoredOrder(category, products));
   const [draggedCode, setDraggedCode] = useState<string | null>(null);
 
   useEffect(() => {
-    setOrderedProducts(products);
+    setOrderedProducts(readStoredOrder(category, products));
     setDraggedCode(null);
-  }, [products]);
+  }, [category, products]);
 
   if (orderedProducts.length === 0) {
     return (
@@ -37,6 +59,11 @@ export default function ProductGrid({ products, paused, onSelect }: Props) {
       const targetIndex = next.findIndex((product) => product.code === targetCode);
       if (draggedIndex < 0 || targetIndex < 0) return current;
       [next[draggedIndex], next[targetIndex]] = [next[targetIndex], next[draggedIndex]];
+      window.localStorage.setItem(
+        `${ORDER_STORAGE_PREFIX}${category}`,
+        JSON.stringify(next.map((product) => product.code)),
+      );
+      scheduleSharedLayoutSave();
       return next;
     });
     setDraggedCode(null);
@@ -49,10 +76,9 @@ export default function ProductGrid({ products, paused, onSelect }: Props) {
           key={product.code}
           product={product}
           paused={paused}
+          grabEnabled={grabEnabled}
           onSelect={onSelect}
           draggable
-          isDragging={draggedCode === product.code}
-          onDragStart={() => setDraggedCode(product.code)}
           onDragEnd={() => setDraggedCode(null)}
           onDragOver={(event) => event.preventDefault()}
           onDrop={() => swapProducts(product.code)}

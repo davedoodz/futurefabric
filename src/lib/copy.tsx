@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ElementType, type FocusEvent, type ReactNode } from "react";
+import { scheduleSharedLayoutSave } from "./layoutPersistence";
 
 const STORAGE_KEY = "futurefabric-copy";
 
@@ -8,11 +9,12 @@ interface CopyContextValue {
   copy: CopyValues;
   updateCopy: (key: string, value: string) => void;
   saveCopy: () => void;
+  editingEnabled: boolean;
 }
 
 const CopyContext = createContext<CopyContextValue | null>(null);
 
-export function CopyProvider({ children }: { children: ReactNode }) {
+export function CopyProvider({ children, editingEnabled = true }: { children: ReactNode; editingEnabled?: boolean }) {
   const [copy, setCopy] = useState<CopyValues>(() => {
     try {
       return JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "{}") as CopyValues;
@@ -23,6 +25,7 @@ export function CopyProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(copy));
+    scheduleSharedLayoutSave();
   }, [copy]);
 
   const updateCopy = (key: string, value: string) => {
@@ -33,7 +36,7 @@ export function CopyProvider({ children }: { children: ReactNode }) {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(copy));
   };
 
-  return <CopyContext.Provider value={{ copy, updateCopy, saveCopy }}>{children}</CopyContext.Provider>;
+  return <CopyContext.Provider value={{ copy, updateCopy, saveCopy, editingEnabled }}>{children}</CopyContext.Provider>;
 }
 
 export function useCopy() {
@@ -50,24 +53,24 @@ interface EditableTextProps {
 }
 
 export function EditableText({ copyKey, defaultValue, as: Component = "span", className }: EditableTextProps) {
-  const { copy, updateCopy } = useCopy();
+  const { copy, updateCopy, editingEnabled } = useCopy();
   const value = copy[copyKey] ?? defaultValue;
 
   return (
     <Component
       className={className}
-      contentEditable
+      contentEditable={editingEnabled}
       suppressContentEditableWarning
-      spellCheck
+      spellCheck={editingEnabled}
       data-copy-key={copyKey}
-      onFocus={(event: FocusEvent<HTMLElement>) => {
+      onFocus={editingEnabled ? (event: FocusEvent<HTMLElement>) => {
         const selection = window.getSelection();
         const range = document.createRange();
         range.selectNodeContents(event.currentTarget);
         selection?.removeAllRanges();
         selection?.addRange(range);
-      }}
-      onBlur={(event: FocusEvent<HTMLElement>) => updateCopy(copyKey, event.currentTarget.textContent ?? "")}
+      } : undefined}
+      onBlur={editingEnabled ? (event: FocusEvent<HTMLElement>) => updateCopy(copyKey, event.currentTarget.textContent ?? "") : undefined}
     >
       {value}
     </Component>

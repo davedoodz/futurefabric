@@ -1,11 +1,14 @@
 import { useEffect, useRef } from "react";
 
+interface Props {
+  modal?: boolean;
+}
+
 /**
- * Gray circle, white stroke, 50% opacity fill — matches the cursor token
- * pulled from the Paper file (#DDDDDD @ 50% + 1px solid white outline).
- * Follows the pointer anywhere inside the app; hidden on touch input.
+ * Follows the pointer with a small neutral circle. The full-size state is
+ * reserved for the focused object itself, not the surrounding modal.
  */
-export default function CustomCursor() {
+export default function CustomCursor({ modal = false }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -16,8 +19,13 @@ export default function CustomCursor() {
     const el = ref.current;
     if (!el) return;
 
-    const onMove = (e: PointerEvent) => {
-      el.style.transform = `translate3d(${e.clientX - 14.5}px, ${e.clientY - 14.5}px, 0)`;
+    const onMove = (event: PointerEvent) => {
+      const hoveredObject = document
+        .elementFromPoint(event.clientX, event.clientY)
+        ?.closest(".sprite-viewer--card, .sprite-viewer--focus");
+      const size = hoveredObject ? 29 : 14.5;
+      el.dataset.large = hoveredObject ? "true" : "false";
+      el.style.transform = `translate3d(${event.clientX - size / 2}px, ${event.clientY - size / 2}px, 0)`;
       el.style.opacity = "1";
     };
     const onLeave = () => {
@@ -33,5 +41,11 @@ export default function CustomCursor() {
     };
   }, []);
 
-  return <div ref={ref} className="custom-cursor" aria-hidden="true" />;
+  return (
+    <div
+      ref={ref}
+      className={`custom-cursor${modal ? " custom-cursor--modal" : ""}`}
+      aria-hidden="true"
+    />
+  );
 }
