@@ -40,7 +40,7 @@ function CategoryIcon({ kind, size, x, y }: { kind: string; size: number; x: num
 function useIconLayout(name: string, id: string) {
   return useDialKit(name, {
     size: [12, 6, 24, 1],
-    position: { type: "pad", x: [12, 0, 32, 1], y: [5, -8, 16, 1] },
+    position: { type: "pad", x: [0, -20, 20, 1], y: [5, -8, 16, 1] },
   }, { id, persist: true });
 }
 
