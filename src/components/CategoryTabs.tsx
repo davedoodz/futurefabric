@@ -78,6 +78,8 @@ export default function CategoryTabs({ active, onChange }: Props) {
     letterSpacing: [-0.04, -0.2, 0.3, 0.01],
     paddingY: [6, 0, 32, 1],
     spacing: [5, 0, 64, 1],
+    activeOpacity: [1, 0, 1, 0.01],
+    inactiveOpacity: [1, 0, 1, 0.01],
   }, { id: "category-pill-layout-under-title", persist: true });
   const all = useIconLayout("All products icon", "category-icon-all", { size: 16, leftInset: 16, iconTextGap: 11, textRightGap: 20, x: -4, y: 1 });
   const sprout = useIconLayout("Sprout icon", "category-icon-sprout", { size: 18, leftInset: 0, iconTextGap: 7, textRightGap: 18, x: 12, y: 1 });
@@ -93,6 +95,8 @@ export default function CategoryTabs({ active, onChange }: Props) {
       "--pill-letter-spacing": `${layout.letterSpacing}em`,
       "--pill-padding-y": `${layout.paddingY}px`,
       "--pill-gap": `${layout.spacing}px`,
+      "--pill-active-opacity": layout.activeOpacity,
+      "--pill-inactive-opacity": layout.inactiveOpacity,
     } as CSSProperties}>
       {CATEGORIES.map((category) => {
         const iconLayout = iconLayouts[ICONS[category]];
@@ -103,6 +107,7 @@ export default function CategoryTabs({ active, onChange }: Props) {
             data-active={category === active}
             onClick={() => onChange(category)}
             style={{
+              "--pill-opacity": category === active ? "var(--pill-active-opacity, 1)" : "var(--pill-inactive-opacity, 1)",
               "--pill-icon-size": `${ICONS[category] === "sprout" ? iconLayout.size * SPROUT_ASPECT_RATIO : iconLayout.size}px`,
               "--pill-icon-inset": `${iconLayout.leftInset}px`,
               "--pill-icon-x": `${iconLayout.position.x}px`,

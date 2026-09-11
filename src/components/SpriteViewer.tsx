@@ -127,6 +127,13 @@ function maskContainsPoint(mask: SpriteHitMask, frame: number, x: number, y: num
 type FrameSubscriber = () => void;
 
 const frameSubscribers = new Set<FrameSubscriber>();
+
+type SyncedFrameSubscriber = (frame: number) => void;
+const syncedFrameSubscribers = new Map<string, Set<SyncedFrameSubscriber>>();
+
+function publishSyncedFrame(syncKey: string, frame: number) {
+  for (const subscriber of syncedFrameSubscribers.get(syncKey) ?? []) subscriber(frame);
+}
 let frameTimer: number | null = null;
 let rotationSpeed = 1;
 
@@ -164,7 +171,10 @@ interface Props {
   eager?: boolean;
   paused?: boolean;
   grabEnabled?: boolean;
-  onActivate?: () => void;
+  initialFrame?: number;
+  syncKey?: string;
+  broadcastFrame?: boolean;
+  onActivate?: (source: HTMLButtonElement, frame: number) => void;
   transform?: string;
 }
 
@@ -182,11 +192,14 @@ export default function SpriteViewer({
   eager = false,
   paused = false,
   grabEnabled = true,
+  initialFrame = 0,
+  syncKey,
+  broadcastFrame = false,
   onActivate,
   transform,
 }: Props) {
   const elementRef = useRef<HTMLButtonElement>(null);
-  const frameRef = useRef(0);
+  const frameRef = useRef(initialFrame);
   const paintedFrameRef = useRef(-1);
   const dragStartRef = useRef<DragStart | null>(null);
   const draggedRef = useRef(false);
@@ -229,7 +242,7 @@ export default function SpriteViewer({
     pausedRef.current = paused;
   }, [paused]);
 
-  const renderFrame = useCallback((frame: number) => {
+  const renderFrame = useCallback((frame: number, broadcast = broadcastFrame) => {
     const normalizedFrame = ((frame % FRAME_COUNT) + FRAME_COUNT) % FRAME_COUNT;
     frameRef.current = normalizedFrame;
     if (paintedFrameRef.current === normalizedFrame) return;
@@ -238,20 +251,34 @@ export default function SpriteViewer({
     elementRef.current?.style.setProperty("background-position", FRAME_POSITIONS[normalizedFrame]);
     const pointer = pointerRef.current;
     if (pointer) updatePixelHover(pointer.x, pointer.y);
-  }, [updatePixelHover]);
+    if (broadcast && syncKey) publishSyncedFrame(syncKey, normalizedFrame);
+  }, [broadcastFrame, syncKey, updatePixelHover]);
+
+  useEffect(() => {
+    if (!syncKey) return;
+    const subscriber = (frame: number) => renderFrame(frame, false);
+    const subscribers = syncedFrameSubscribers.get(syncKey) ?? new Set<SyncedFrameSubscriber>();
+    subscribers.add(subscriber);
+    syncedFrameSubscribers.set(syncKey, subscribers);
+    return () => {
+      subscribers.delete(subscriber);
+      if (subscribers.size === 0) syncedFrameSubscribers.delete(syncKey);
+    };
+  }, [renderFrame, syncKey]);
 
   useEffect(() => {
     const element = elementRef.current;
     if (!element) return;
 
-    frameRef.current = 0;
+    frameRef.current = initialFrame;
     paintedFrameRef.current = -1;
-    renderFrame(0);
+    renderFrame(initialFrame);
 
     let unsubscribe = () => {};
     let observer: IntersectionObserver | null = null;
     let loaded = false;
     let subscribed = false;
+    let resumeObservationTimer = 0;
 
     const subscribe = () => {
       if (subscribed) return;
@@ -312,14 +339,43 @@ export default function SpriteViewer({
       observer.observe(element);
     }
 
+    const refreshVisibility = (event: Event) => {
+      const requestedSyncKey = (event as CustomEvent<string | undefined>).detail;
+      if (requestedSyncKey && requestedSyncKey !== syncKey) return;
+      if (requestedSyncKey && observer) {
+        observer.disconnect();
+        load();
+        resumeObservationTimer = window.setTimeout(() => {
+          observer?.observe(element);
+        }, 500);
+        return;
+      }
+      if (eager) {
+        load();
+        return;
+      }
+      const bounds = element.getBoundingClientRect();
+      const margin = 100;
+      const intersectsViewport =
+        bounds.bottom >= -margin &&
+        bounds.top <= window.innerHeight + margin &&
+        bounds.right >= 0 &&
+        bounds.left <= window.innerWidth;
+      if (intersectsViewport) load();
+      else unload();
+    };
+    window.addEventListener("sprite-visibility-refresh", refreshVisibility);
+
     return () => {
       observer?.disconnect();
+      window.clearTimeout(resumeObservationTimer);
+      window.removeEventListener("sprite-visibility-refresh", refreshVisibility);
       unsubscribeIfSubscribed();
       pointerRef.current = null;
       hitMaskRef.current = null;
       setPixelHover(false);
     };
-  }, [eager, renderFrame, setPixelHover, src, updatePixelHover]);
+  }, [eager, initialFrame, renderFrame, setPixelHover, src, updatePixelHover]);
   const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
     if (
       !grabEnabledRef.current ||
@@ -369,7 +425,7 @@ export default function SpriteViewer({
       heldRef.current = false;
       return;
     }
-    onActivate?.();
+    onActivate?.(event.currentTarget, frameRef.current);
   };
 
   return (

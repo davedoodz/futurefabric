@@ -1,9 +1,11 @@
 import { useDialKit } from "dialkit";
 import type { CSSProperties, DragEvent } from "react";
 import { gridSpriteSheet, type Product } from "../data/products";
+import { materialChemistry, moleculeDisplayName } from "../data/materialChemistry";
 import { EditableText } from "../lib/copy";
 import SpriteViewer from "./SpriteViewer";
 import MaterialScan from "./MaterialScan";
+import MoleculeViewer from "./MoleculeViewer";
 
 const PLACEMENT_LIMIT = 40;
 const DEFAULT_PLACEMENTS: Record<string, { x: number; y: number; z: number; scale: number }> = {
@@ -71,7 +73,7 @@ interface Props {
   grabEnabled: boolean;
   showFrame: boolean;
   darkMode: boolean;
-  onSelect: (product: Product) => void;
+  onSelect: (product: Product, sourceRect: DOMRect, sourceFrame: number) => void;
   draggable?: boolean;
   isDragging?: boolean;
   onDragStart?: () => void;
@@ -95,6 +97,7 @@ export default function ProductCard({
   onDrop,
 }: Props) {
   const placement = useProductPlacement(product);
+  const chemistry = materialChemistry(product);
   if (!placement.visible) return null;
   const spriteSheet = placement.scale >= 1.75 ? product.spriteSheet : gridSpriteSheet(product);
   const transform = `translate3d(${placement.x}cqw, ${-placement.y}cqh, ${placement.z}px) scale(${placement.scale})`;
@@ -111,6 +114,10 @@ export default function ProductCard({
     >
       <div className="product-card__image" data-frame={showFrame}>
         <div className="product-card__object">
+          {darkMode ? (
+            <MoleculeViewer product={product} paused={paused} interactive={grabEnabled}
+              onActivate={(source) => onSelect(product, source.getBoundingClientRect(), 0)} />
+          ) : (
           <SpriteViewer
             src={spriteSheet}
             alt={product.alt}
@@ -118,20 +125,25 @@ export default function ProductCard({
             transform={transform}
             paused={paused}
             grabEnabled={grabEnabled}
-            onActivate={() => onSelect(product)}
+            syncKey={product.code}
+            onActivate={(source, frame) => onSelect(product, source.getBoundingClientRect(), frame)}
           />
+          )}
         </div>
       </div>
       {darkMode ? <MaterialScan product={product} paused={paused} /> : null}
       <EditableText copyKey={`product.${product.code}.code`} defaultValue={product.code} as="p" className="product-card__code" />
-      <EditableText
-        copyKey={`product.${product.code}.name`}
-        defaultValue={product.name}
-        as="h3"
-        className="product-card__name"
-        style={{ "--product-title-fit-divisor": Math.max(product.name.length * 0.55, 1) } as CSSProperties}
-      />
-      <EditableText copyKey={`product.${product.code}.companies`} defaultValue={product.companies} as="p" className="product-card__companies" />
+      {darkMode ? (
+        <>
+          <h3 className="product-card__name">{moleculeDisplayName(chemistry.name)}</h3>
+          <p className="product-card__companies">{chemistry.formula} · {moleculeDisplayName(chemistry.bonds)}</p>
+        </>
+      ) : (
+        <>
+          <EditableText copyKey={`product.${product.code}.name`} defaultValue={product.name} as="h3" className="product-card__name" style={{ "--product-title-fit-divisor": Math.max(product.name.length * 0.55, 1) } as CSSProperties} />
+          <EditableText copyKey={`product.${product.code}.companies`} defaultValue={product.companies} as="p" className="product-card__companies" />
+        </>
+      )}
     </article>
   );
 }

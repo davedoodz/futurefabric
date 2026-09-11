@@ -13,7 +13,7 @@ interface Props {
   grabEnabled: boolean;
   showFrames: boolean;
   darkMode: boolean;
-  onSelect: (product: Product) => void;
+  onSelect: (product: Product, sourceRect: DOMRect, sourceFrame: number) => void;
 }
 
 function readStoredOrder(category: Category, products: Product[]) {

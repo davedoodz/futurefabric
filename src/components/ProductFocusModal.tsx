@@ -1,26 +1,55 @@
-import { useEffect, useRef, useState, type CSSProperties, type MouseEvent } from "react";
+import { useDialKit } from "dialkit";
+import { useEffect, useRef, useState, type CSSProperties, type MouseEvent, type WheelEvent as ReactWheelEvent } from "react";
 import type { Product } from "../data/products";
 import { PRODUCT_INFO } from "../data/productInfo";
+import { materialChemistry, moleculeDisplayName } from "../data/materialChemistry";
 import { EditableText } from "../lib/copy";
+import { scheduleSharedLayoutSave } from "../lib/layoutPersistence";
 import SpriteViewer from "./SpriteViewer";
 import CustomCursor from "./CustomCursor";
+import MoleculeViewer from "./MoleculeViewer";
 
-// Buffer above the 220ms `focus-product-out` CSS animation (index.css) so the
-// dialog still closes if the animationend event never fires (e.g. animation
-// interrupted, style recalculation skipped, or reduced-motion media query
-// changes mid-transition).
-const CLOSE_FALLBACK_MS = 300;
+// Buffer above the 280ms shared-element exit so the dialog still closes if
+// animationend is interrupted or skipped.
+const CLOSE_FALLBACK_MS = 340;
 
 interface Props {
   product: Product | null;
+  sourceRect: DOMRect | null;
+  initialFrame: number;
   onClose: () => void;
   grabEnabled: boolean;
+  darkMode: boolean;
 }
+export default function ProductFocusModal({ product, sourceRect, initialFrame, onClose, grabEnabled, darkMode }: Props) {
+  const arrow = useDialKit(
+    "Product link arrow",
+    {
+      x: [0, -80, 80, 1],
+      y: [0, -80, 80, 1],
+      size: [18, 8, 64, 1],
+    },
+    { id: "product-link-arrow", persist: true },
+  );
 
-export default function ProductFocusModal({ product, onClose, grabEnabled }: Props) {
+  useEffect(() => {
+    scheduleSharedLayoutSave();
+  }, [arrow.size]);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [closing, setClosing] = useState(false);
+  const [zoom, setZoom] = useState(1);
+
+  const focusSize = typeof window === "undefined"
+    ? 720
+    : Math.min(window.innerWidth, window.innerHeight) * 0.72;
+  const motionStyle = {
+    "--focus-source-x": `${sourceRect ? sourceRect.left + sourceRect.width / 2 - window.innerWidth / 2 : 0}px`,
+    "--focus-source-y": `${sourceRect ? sourceRect.top + sourceRect.height / 2 - window.innerHeight / 2 : 0}px`,
+    "--focus-source-scale": sourceRect ? sourceRect.width / Math.min(focusSize, 720) : 0.88,
+    "--focus-zoom": zoom,
+  } as CSSProperties;
   const closeTimeoutRef = useRef<number | null>(null);
+  const dismissedRef = useRef(false);
 
   const clearCloseTimeout = () => {
     if (closeTimeoutRef.current !== null) {
@@ -32,7 +61,9 @@ export default function ProductFocusModal({ product, onClose, grabEnabled }: Pro
   useEffect(() => {
     const dialog = dialogRef.current;
     document.body.classList.toggle("modal-open", Boolean(product));
+    setZoom(1);
     if (product && dialog && !dialog.open) {
+      dismissedRef.current = false;
       setClosing(false);
       dialog.showModal();
     }
@@ -41,92 +72,83 @@ export default function ProductFocusModal({ product, onClose, grabEnabled }: Pro
       document.body.classList.remove("modal-open");
     };
   }, [product]);
-
-  useEffect(() => clearCloseTimeout, []);
+  const finishClose = () => {
+    if (dismissedRef.current) return;
+    dismissedRef.current = true;
+    const closingProductCode = product?.code;
+    clearCloseTimeout();
+    dialogRef.current?.close();
+    setClosing(false);
+    onClose();
+    if (closingProductCode) {
+      window.dispatchEvent(new CustomEvent("sprite-visibility-refresh", { detail: closingProductCode }));
+    }
+  };
 
   const requestClose = () => {
     const dialog = dialogRef.current;
     if (!dialog || closing) return;
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      dialog.close();
+      finishClose();
       return;
     }
 
     setClosing(true);
     clearCloseTimeout();
-    closeTimeoutRef.current = window.setTimeout(() => {
-      closeTimeoutRef.current = null;
-      dialogRef.current?.close();
-    }, CLOSE_FALLBACK_MS);
+    closeTimeoutRef.current = window.setTimeout(finishClose, CLOSE_FALLBACK_MS);
   };
 
   const handleBackdropClick = (event: MouseEvent<HTMLDialogElement>) => {
     if (event.target === event.currentTarget) requestClose();
   };
 
+
+  const handleContentClick = (event: MouseEvent<HTMLDivElement>) => {
+    const target = event.target;
+    if (!(target instanceof Element) || target.closest(".product-focus__bar") || target.closest(".molecule-viewer")) return;
+
+    const viewer = target.closest<HTMLElement>(".sprite-viewer--focus");
+    if (viewer?.dataset.pixelHover === "true") return;
+    requestClose();
+  };
+  const handleWheel = (event: ReactWheelEvent<HTMLDialogElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setZoom((current) => Math.min(2.5, Math.max(0.6, current - event.deltaY * 0.001)));
+  };
+
   return (
-    <dialog
-      ref={dialogRef}
-      className="product-focus"
-      data-closing={closing}
+    <dialog ref={dialogRef} className="product-focus" data-closing={closing} data-dark-mode={darkMode} style={motionStyle}
       aria-label={product ? `${product.alt} full-screen view` : undefined}
-      onCancel={(event) => {
-        event.preventDefault();
-        requestClose();
-      }}
-      onClose={() => {
-        clearCloseTimeout();
-        setClosing(false);
-        onClose();
-      }}
-      onClick={handleBackdropClick}
-    >
+      onCancel={(event) => { event.preventDefault(); requestClose(); }}
+      onClose={() => { clearCloseTimeout(); setClosing(false); if (!dismissedRef.current) { dismissedRef.current = true; onClose(); } }}
+      onClick={handleBackdropClick} onWheel={handleWheel}>
       <CustomCursor modal />
       {product ? (
-        <div
-          className="product-focus__content"
-          onAnimationEnd={(event) => {
-            if (
-              closing &&
-              event.animationName === "focus-product-out" &&
-              event.target === event.currentTarget
-            ) {
-              clearCloseTimeout();
-              dialogRef.current?.close();
-            }
-          }}
-        >
-          <SpriteViewer
-            src={product.spriteSheet}
-            alt={product.alt}
-            className="sprite-viewer--focus"
-            eager
-            grabEnabled={grabEnabled}
-          />
+        <div className="product-focus__content" onClick={handleContentClick}
+          onAnimationEnd={(event) => { if (closing && event.animationName === "focus-shared-out") finishClose(); }}>
+          <div className="product-focus__object">
+            {darkMode ? <MoleculeViewer product={product} focus zoom={zoom} interactive /> : (
+              <SpriteViewer src={product.spriteSheet} alt={product.alt} className="sprite-viewer--focus" eager
+                grabEnabled={grabEnabled} transform={`scale(${zoom})`} initialFrame={initialFrame} syncKey={product.code} broadcastFrame />
+            )}
+          </div>
           <section className="product-focus__bar" aria-label={`${product.name} specifications`}>
             <div className="product-focus__identity">
-              <EditableText
-                copyKey={`product.${product.code}.code`}
-                defaultValue={product.code}
-                as="p"
-                className="product-focus__code"
-              />
-              <EditableText
-                copyKey={`product.${product.code}.name`}
-                defaultValue={product.name}
-                as="h2"
-                className="product-focus__title"
-                style={{ "--product-title-fit-divisor": Math.max(product.name.length * 0.55, 1) } as CSSProperties}
-              />
-              <EditableText
-                copyKey={`product.${product.code}.companies`}
-                defaultValue={product.companies}
-                as="p"
-                className="product-focus__companies"
-              />
+              <EditableText copyKey={`product.${product.code}.code`} defaultValue={product.code} as="p" className="product-focus__code" />
+              <div className="product-focus__title-row">
+                {darkMode ? <h2 className="product-focus__title">{moleculeDisplayName(materialChemistry(product).name)}</h2> :
+                  <EditableText copyKey={`product.${product.code}.name`} defaultValue={product.name} as="h2" className="product-focus__title" />}
+                <a className="product-focus__link" href={PRODUCT_INFO[product.code].productUrl} target="_blank" rel="noreferrer" aria-label={`View ${product.name} product page`}>
+                  <span className="material-symbols-outlined" aria-hidden="true" style={{ "--product-arrow-x": `${arrow.x}px`, "--product-arrow-y": `${arrow.y}px`, "--product-arrow-size": `${arrow.size}px` } as CSSProperties}>arrow_outward</span>
+                </a>
+              </div>
+              {darkMode ? <p className="product-focus__companies">{materialChemistry(product).formula} · {moleculeDisplayName(materialChemistry(product).bonds)}</p> :
+                <EditableText copyKey={`product.${product.code}.companies`} defaultValue={product.companies} as="p" className="product-focus__companies" />}
             </div>
-            <dl className="product-focus__specs">
+          </section>
+          <dl className="product-focus__specs">
               <div>
                 <EditableText copyKey="modal.label.material" defaultValue="Material" as="dt" />
                 <EditableText
@@ -151,17 +173,7 @@ export default function ProductFocusModal({ product, onClose, grabEnabled }: Pro
                   as="dd"
                 />
               </div>
-            </dl>
-            <a
-              className="product-focus__link"
-              href={PRODUCT_INFO[product.code].productUrl}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <EditableText copyKey="modal.link.product" defaultValue="View product page" />
-              <span className="material-symbols-outlined" aria-hidden="true">arrow_outward</span>
-            </a>
-          </section>
+          </dl>
         </div>
       ) : null}
     </dialog>

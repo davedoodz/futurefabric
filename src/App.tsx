@@ -36,8 +36,7 @@ export default function App() {
     {
       letterSpacing: [-0.08, -0.2, 0.1, 0.01],
       lineHeight: [0.8, 0.8, 2, 0.01],
-      productCodeSize: [14, 8, 32, 1],
-      productCodeColor: "#d9d9d9",
+      grayColor: "#6b6b6b",
       productNameSize: [18, 12, 72, 1],
       productNameColor: "#000000",
       productNameLetterSpacing: [-0.03, -0.2, 0.2, 0.01],
@@ -68,20 +67,21 @@ export default function App() {
   );
   const [darkMode, setDarkMode] = useState(false);
   const [focusedProduct, setFocusedProduct] = useState<Product | null>(null);
+  const [focusSourceRect, setFocusSourceRect] = useState<DOMRect | null>(null);
+  const [focusSourceFrame, setFocusSourceFrame] = useState(0);
   useEffect(() => {
     setRotationSpeed(rotation.speed);
   }, [rotation.speed]);
   const layoutStyle = {
     "--layout-letter-spacing": `${layout.letterSpacing}em`,
     "--layout-line-height": layout.lineHeight,
-    "--layout-product-code-size": `${layout.productCodeSize}px`,
-    "--layout-product-code-color": layout.productCodeColor,
+    "--color-mist": layout.grayColor,
+    "--layout-product-code-color": layout.grayColor,
     "--layout-product-name-size": `${layout.productNameSize}px`,
     "--layout-product-name-color": layout.productNameColor,
     "--layout-product-name-letter-spacing": `${layout.productNameLetterSpacing}em`,
     "--layout-product-company-size": `${layout.productCompanySize}px`,
-    "--layout-product-company-color": layout.productCompanyColor,
-    "--layout-wordmark-gap": `${layout.wordmarkGap}px`,
+    "--layout-product-company-color": layout.grayColor,
     "--layout-title-subtitle-gap": `${layout.titleSubtitleGap}px`,
     "--layout-product-title-subtitle-gap": `${layout.productTitleSubtitleGap}px`,
     "--layout-subtitle-pills-gap": `${layout.subtitlePillsGap}px`,
@@ -108,14 +108,25 @@ export default function App() {
             grabEnabled={interfaceControls.objectGrab}
             showFrames={interfaceControls.productFrames}
             darkMode={darkMode}
-            onSelect={setFocusedProduct}
+            onSelect={(product, sourceRect, sourceFrame) => {
+              setFocusSourceRect(sourceRect);
+              setFocusSourceFrame(sourceFrame);
+              setFocusedProduct(product);
+            }}
           />
         </main>
         <SponsorLogos />
         <ProductFocusModal
           product={focusedProduct}
-          onClose={() => setFocusedProduct(null)}
+          sourceRect={focusSourceRect}
+          initialFrame={focusSourceFrame}
+          onClose={() => {
+            setFocusedProduct(null);
+            setFocusSourceRect(null);
+            setFocusSourceFrame(0);
+          }}
           grabEnabled={interfaceControls.objectGrab}
+          darkMode={darkMode}
         />
       </div>
     </CopyProvider>
