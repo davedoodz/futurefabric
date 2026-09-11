@@ -90,15 +90,17 @@ export default function ProductCard({
       onDrop={onDrop}
     >
       <div className="product-card__image">
-        <SpriteViewer
-          src={spriteSheet}
-          alt={product.alt}
-          className="sprite-viewer--card"
-          transform={transform}
-          paused={paused}
-          grabEnabled={grabEnabled}
-          onActivate={() => onSelect(product)}
-        />
+        <div className="product-card__object">
+          <SpriteViewer
+            src={spriteSheet}
+            alt={product.alt}
+            className="sprite-viewer--card"
+            transform={transform}
+            paused={paused}
+            grabEnabled={grabEnabled}
+            onActivate={() => onSelect(product)}
+          />
+        </div>
       </div>
       <EditableText copyKey={`product.${product.code}.code`} defaultValue={product.code} as="p" className="product-card__code" />
       <EditableText copyKey={`product.${product.code}.name`} defaultValue={product.name} as="h3" className="product-card__name" />
