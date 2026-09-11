@@ -1,5 +1,5 @@
 import { useEffect, useState, type CSSProperties } from "react";
-import { DialRoot, DialStore, useDialKit } from "dialkit";
+import { DialRoot, useDialKit } from "dialkit";
 import Header from "./components/Header";
 import CategoryTabs from "./components/CategoryTabs";
 import ProductGrid from "./components/ProductGrid";
@@ -8,7 +8,7 @@ import ProductFocusModal from "./components/ProductFocusModal";
 import SponsorLogos from "./components/SponsorLogos";
 import { setRotationSpeed } from "./components/SpriteViewer";
 import { CopyProvider, EditableText, useCopy } from "./lib/copy";
-import { scheduleSharedLayoutSave, saveSharedLayout } from "./lib/layoutPersistence";
+import { saveSharedLayout } from "./lib/layoutPersistence";
 import { PRODUCTS, type Category, type Product } from "./data/products";
 
 function SaveAllButton() {
@@ -36,8 +36,13 @@ export default function App() {
     {
       letterSpacing: [-0.08, -0.2, 0.1, 0.01],
       lineHeight: [1.1, 0.8, 2, 0.01],
+      productCodeSize: [14, 8, 32, 1],
+      productCodeColor: "#d9d9d9",
       productNameSize: [27, 12, 72, 1],
+      productNameColor: "#000000",
       productNameLetterSpacing: [-0.08, -0.2, 0.2, 0.01],
+      productCompanySize: [18, 8, 40, 1],
+      productCompanyColor: "#d9d9d9",
       productTitleSubtitleGap: [8, 0, 80, 1],
       wordmarkGap: [12, 0, 80, 1],
       titleSubtitleGap: [8, 0, 80, 1],
@@ -62,15 +67,16 @@ export default function App() {
   useEffect(() => {
     setRotationSpeed(rotation.speed);
   }, [rotation.speed]);
-  useEffect(() => {
-    const unsubscribe = DialStore.subscribeGlobal(scheduleSharedLayoutSave);
-    return unsubscribe;
-  }, []);
   const layoutStyle = {
     "--layout-letter-spacing": `${layout.letterSpacing}em`,
     "--layout-line-height": layout.lineHeight,
+    "--layout-product-code-size": `${layout.productCodeSize}px`,
+    "--layout-product-code-color": layout.productCodeColor,
     "--layout-product-name-size": `${layout.productNameSize}px`,
+    "--layout-product-name-color": layout.productNameColor,
     "--layout-product-name-letter-spacing": `${layout.productNameLetterSpacing}em`,
+    "--layout-product-company-size": `${layout.productCompanySize}px`,
+    "--layout-product-company-color": layout.productCompanyColor,
     "--layout-wordmark-gap": `${layout.wordmarkGap}px`,
     "--layout-title-subtitle-gap": `${layout.titleSubtitleGap}px`,
     "--layout-product-title-subtitle-gap": `${layout.productTitleSubtitleGap}px`,

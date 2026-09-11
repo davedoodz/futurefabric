@@ -50,10 +50,10 @@ export default function CategoryTabs({ active, onChange }: Props) {
     fontSize: [14, 8, 48, 1],
     fontWeight: [400, 100, 900, 100],
     letterSpacing: [-0.08, -0.2, 0.3, 0.01],
-    padding: [8, 0, 32, 1],
+    paddingY: [8, 0, 32, 1],
+    paddingX: [16, 0, 96, 1],
     spacing: [8, 0, 64, 1],
     contentGap: [8, 0, 32, 1],
-    textX: [0, -100, 100, 1],
     width: [0, 0, 600, 1],
   }, { id: "category-pill-layout-under-title", persist: true });
 
@@ -66,7 +66,8 @@ export default function CategoryTabs({ active, onChange }: Props) {
   return (
     <nav className="category-tabs" data-orientation={layout.orientation} aria-label="Filter by material category" style={{
       "--pill-font-size": `${layout.fontSize}px`,
-      "--pill-padding": `${layout.padding}px`,
+      "--pill-padding-y": `${layout.paddingY}px`,
+      "--pill-padding-x": `${layout.paddingX}px`,
       "--pill-gap": `${layout.spacing}px`,
       "--pill-content-gap": `${layout.contentGap}px`,
     } as CSSProperties}>
@@ -80,8 +81,6 @@ export default function CategoryTabs({ active, onChange }: Props) {
             data-active={category === active}
             onClick={() => onChange(category)}
             style={{
-              "--pill-icon-size": `${iconLayout.size}px`,
-              "--pill-text-x": `${layout.textX}px`,
               width: layout.width > 0 ? `${layout.width}px` : undefined,
             } as CSSProperties}
           >
