@@ -341,7 +341,9 @@ body.modal-open .custom-cursor:not(.custom-cursor--modal) {
 
 .category-tab {
   position: relative;
-  display: flex;
+  display: grid;
+  grid-template-columns: var(--pill-icon-size, 12px) auto var(--pill-icon-size, 12px);
+  column-gap: var(--pill-content-gap, 8px);
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
@@ -356,33 +358,32 @@ body.modal-open .custom-cursor:not(.custom-cursor--modal) {
   font-size: var(--pill-font-size, 14px);
   font-weight: var(--pill-font-weight, 400);
   letter-spacing: var(--pill-letter-spacing, -0.08em);
-  padding: 16px calc(var(--pill-padding, 8px) + var(--pill-icon-size, 12px));
+  padding: 16px var(--pill-padding, 8px);
   cursor: pointer;
   pointer-events: auto;
 }
 
 .category-tab > svg {
-  position: absolute;
-  left: var(--pill-padding, 8px);
+  position: static;
+  grid-column: 1;
+  justify-self: start;
 }
 
 .category-tab__label {
   display: block;
-  width: 100%;
-  padding-inline: var(--pill-icon-size, 12px);
+  grid-column: 2;
+  width: auto;
   text-align: center;
   transform: translateX(var(--pill-text-x, 0px));
 }
-
 .category-tabs[data-orientation="vertical"] .category-tab {
   writing-mode: vertical-rl;
   transform: rotate(180deg);
 }
 
 .category-tabs[data-orientation="horizontal"] .category-tab {
-  padding: 6px calc(var(--pill-padding, 8px) + var(--pill-icon-size, 12px));
+  padding: 6px var(--pill-padding, 8px);
 }
-
 .category-tab[data-active="true"] {
   background: #000000;
   color: #ffffff;
@@ -455,6 +456,19 @@ body.modal-open .custom-cursor:not(.custom-cursor--modal) {
   justify-content: center;
   perspective: 900px;
   container-type: size;
+}
+.product-card__object {
+  width: min(100%, var(--layout-frame-width, 220px));
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  transition: transform 260ms ease-out;
+  transform-origin: center bottom;
+}
+
+.product-card__image:hover .product-card__object {
+  transform: scale(1.25);
 }
 
 .sprite-viewer {

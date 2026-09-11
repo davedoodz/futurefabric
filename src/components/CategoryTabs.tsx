@@ -52,6 +52,7 @@ export default function CategoryTabs({ active, onChange }: Props) {
     letterSpacing: [-0.08, -0.2, 0.3, 0.01],
     padding: [8, 0, 32, 1],
     spacing: [8, 0, 64, 1],
+    contentGap: [8, 0, 32, 1],
     textX: [0, -100, 100, 1],
     width: [0, 0, 600, 1],
   }, { id: "category-pill-layout-under-title", persist: true });
@@ -65,10 +66,9 @@ export default function CategoryTabs({ active, onChange }: Props) {
   return (
     <nav className="category-tabs" data-orientation={layout.orientation} aria-label="Filter by material category" style={{
       "--pill-font-size": `${layout.fontSize}px`,
-      "--pill-font-weight": layout.fontWeight,
-      "--pill-letter-spacing": `${layout.letterSpacing}em`,
       "--pill-padding": `${layout.padding}px`,
       "--pill-gap": `${layout.spacing}px`,
+      "--pill-content-gap": `${layout.contentGap}px`,
     } as CSSProperties}>
       {CATEGORIES.map((category) => {
         const iconLayout = iconLayouts[ICONS[category]];
