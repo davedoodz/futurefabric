@@ -51,13 +51,22 @@ function CategoryIcon({ kind, size, x, y }: { kind: IconKind; size: number; x: n
   return <svg {...common}><path d="M6.857 24.571C6.857 15.571 14.457 8.571 23.857 8.571C33.257 8.571 40.857 15.571 40.857 24.571C40.857 26.571 39.257 28.071 37.357 28.071L10.357 28.071C8.457 28.071 6.857 26.571 6.857 24.571Z" fill="currentColor" /><path d="M20.429 22.428L27.286 22.428L27.286 35.928C27.286 38.428 25.743 39.928 23.857 39.928C21.972 39.928 20.429 38.428 20.429 35.928L20.429 22.428Z" fill="currentColor" /></svg>;
 }
 
-function useIconLayout(name: string, id: string, defaultX: number) {
+interface IconLayoutDefaults {
+  size: number;
+  leftInset: number;
+  iconTextGap: number;
+  textRightGap: number;
+  x: number;
+  y: number;
+}
+
+function useIconLayout(name: string, id: string, defaults: IconLayoutDefaults) {
   return useDialKit(name, {
-    size: [12, 6, 24, 1],
-    leftInset: [16, 0, 120, 1],
-    iconTextGap: [48, 0, 120, 1],
-    textRightGap: [48, 0, 120, 1],
-    position: { type: "pad", x: [defaultX, -20, 20, 1], y: [5, -8, 16, 1] },
+    size: [defaults.size, 6, 24, 1],
+    leftInset: [defaults.leftInset, 0, 120, 1],
+    iconTextGap: [defaults.iconTextGap, 0, 120, 1],
+    textRightGap: [defaults.textRightGap, 0, 120, 1],
+    position: { type: "pad", x: [defaults.x, -20, 20, 1], y: [defaults.y, -8, 16, 1] },
   }, { id, persist: true });
 }
 
@@ -65,16 +74,16 @@ export default function CategoryTabs({ active, onChange }: Props) {
   const layout = useDialKit("Category pills", {
     orientation: { type: "select", options: ["horizontal", "vertical"] },
     fontSize: [14, 8, 48, 1],
-    fontWeight: [400, 100, 900, 100],
-    letterSpacing: [-0.08, -0.2, 0.3, 0.01],
-    paddingY: [8, 0, 32, 1],
-    spacing: [8, 0, 64, 1],
+    fontWeight: [100, 100, 900, 100],
+    letterSpacing: [-0.04, -0.2, 0.3, 0.01],
+    paddingY: [6, 0, 32, 1],
+    spacing: [5, 0, 64, 1],
   }, { id: "category-pill-layout-under-title", persist: true });
-  const all = useIconLayout("All products icon", "category-icon-all", 0);
-  const sprout = useIconLayout("Sprout icon", "category-icon-sprout", 12);
-  const protein = useIconLayout("Protein icon", "category-icon-protein", 12);
-  const polymer = useIconLayout("Polymer icon", "category-icon-polymer", 12);
-  const mushroom = useIconLayout("Mushroom icon", "category-icon-mushroom", 12);
+  const all = useIconLayout("All products icon", "category-icon-all", { size: 16, leftInset: 16, iconTextGap: 11, textRightGap: 20, x: -4, y: 1 });
+  const sprout = useIconLayout("Sprout icon", "category-icon-sprout", { size: 18, leftInset: 0, iconTextGap: 7, textRightGap: 18, x: 12, y: 1 });
+  const protein = useIconLayout("Protein icon", "category-icon-protein", { size: 17, leftInset: 16, iconTextGap: 8, textRightGap: 18, x: -4, y: 0 });
+  const polymer = useIconLayout("Polymer icon", "category-icon-polymer", { size: 18, leftInset: 16, iconTextGap: 7, textRightGap: 17, x: -6, y: 0 });
+  const mushroom = useIconLayout("Mushroom icon", "category-icon-mushroom", { size: 18, leftInset: 16, iconTextGap: 8, textRightGap: 17, x: -5, y: 1 });
   const iconLayouts = { all, sprout, protein, polymer, mushroom };
 
   return (

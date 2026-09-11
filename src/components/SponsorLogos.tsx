@@ -24,7 +24,7 @@ export default function SponsorLogos() {
     { id: "mit-program-logo-visibility", persist: true },
   );
   const designX = useLogoPlacement("MIT DesignX", { x: 100, y: 72, scale: 0.43 });
-  const arts = useLogoPlacement("MIT Arts Startup Incubator", { x: 100, y: 72, scale: 0.48 });
+  const arts = useLogoPlacement("MIT Arts Startup Incubator", { x: 100, y: 72, scale: 0.25 });
 
   return (
     <div className="sponsor-logos" aria-label="MIT program logos">

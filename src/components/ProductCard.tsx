@@ -7,10 +7,23 @@ import MaterialScan from "./MaterialScan";
 
 const PLACEMENT_LIMIT = 40;
 const DEFAULT_PLACEMENTS: Record<string, { x: number; y: number; z: number; scale: number }> = {
-  PL01: { x: -11, y: 5, z: 0, scale: 1.38 },
-  PL02: { x: -25, y: 1, z: 0, scale: 1.35 },
-  PL03: { x: -25, y: 17, z: 0, scale: 1.33 },
-  PL04: { x: -26, y: 0, z: 0, scale: 1 },
+  PL01: { x: -3, y: 19, z: 0, scale: 1.72 },
+  PL02: { x: -8, y: 19, z: 0, scale: 1.01 },
+  PL03: { x: -2, y: 20, z: 0, scale: 1.57 },
+  PL04: { x: 0, y: 19, z: 0, scale: 1.34 },
+  PL05: { x: -5, y: 23, z: 0, scale: 1.58 },
+  PL06: { x: 0, y: 20, z: 0, scale: 1.48 },
+  PL07: { x: 1, y: 17, z: 0, scale: 1.5 },
+  PL08: { x: -1, y: 21, z: 0, scale: 1.43 },
+  PL09: { x: -1, y: 21, z: 0, scale: 1.63 },
+  PL10: { x: 0, y: 21, z: 0, scale: 1.61 },
+  PL11: { x: 2, y: 20, z: 0, scale: 1.63 },
+  PL12: { x: 1, y: 20, z: 0, scale: 1.72 },
+  PL13: { x: 1, y: 23, z: 0, scale: 1.7 },
+  PL14: { x: -2, y: 21, z: 0, scale: 1.66 },
+  PL15: { x: 0, y: 17, z: 0, scale: 1.51 },
+  PL16: { x: 1, y: 19, z: 0, scale: 1.35 },
+  PL17: { x: -1, y: 23, z: 0, scale: 1.69 },
 };
 
 // Keep the placement storage IDs stable while visible catalog codes evolve.

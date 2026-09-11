@@ -7,7 +7,7 @@ export default function Header({ darkMode, onToggleDarkMode }: { darkMode: boole
   const titleShape = useDialKit(
     "Title shape",
     {
-      size: [40, 8, 200, 1],
+      size: [39, 8, 200, 1],
       x: [0, -400, 400, 1],
       y: [0, -160, 160, 1],
     },
@@ -16,8 +16,8 @@ export default function Header({ darkMode, onToggleDarkMode }: { darkMode: boole
   const titleText = useDialKit(
     "Title text",
     {
-      size: [53, 16, 200, 1],
-      x: [0, -400, 400, 1],
+      size: [54, 16, 200, 1],
+      x: [-2, -400, 400, 1],
       y: [0, -160, 160, 1],
     },
     { id: "site-title-text", persist: true },
@@ -25,13 +25,13 @@ export default function Header({ darkMode, onToggleDarkMode }: { darkMode: boole
   const subtitle = useDialKit(
     "Subtitle",
     {
-      x: [0, -400, 400, 1],
-      y: [0, -160, 160, 1],
+      x: [60, -400, 400, 1],
+      y: [1, -160, 160, 1],
       indentStyle: { type: "select", options: ["none", "first-line", "hanging", "stepped"] },
       indent: [32, 0, 160, 1],
       alignment: { type: "select", options: ["left", "center", "right"] },
       lineSpacing: [1.1, 0.7, 2, 0.01],
-      fontSize: [31, 12, 80, 1],
+      fontSize: [38, 12, 80, 1],
     },
     { id: "site-subtitle-layout", persist: true },
   );
