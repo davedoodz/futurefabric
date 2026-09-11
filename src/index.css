@@ -49,14 +49,12 @@ body:has(.page[data-dark-mode="true"]) {
   color: #000000;
 }
 
-html.has-custom-cursor,
-html.has-custom-cursor * {
-  cursor: none !important;
-}
-
-body.has-custom-cursor,
-body.has-custom-cursor * {
-  cursor: none !important;
+html,
+body,
+html *,
+html *::before,
+html *::after {
+  cursor: url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==") 0 0, none !important;
 }
 
 body.modal-open .custom-cursor:not(.custom-cursor--modal) {
