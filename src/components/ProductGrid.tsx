@@ -83,6 +83,7 @@ export default function ProductGrid({ category, products, paused, grabEnabled, s
           darkMode={darkMode}
           onSelect={onSelect}
           draggable
+          onDragStart={() => setDraggedCode(product.code)}
           onDragEnd={() => setDraggedCode(null)}
           onDragOver={(event) => event.preventDefault()}
           onDrop={() => swapProducts(product.code)}

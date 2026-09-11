@@ -60,6 +60,7 @@ function useProductPlacement(product: Product) {
       y: [defaults.y, -PLACEMENT_LIMIT, PLACEMENT_LIMIT, 1],
       z: [defaults.z, -400, 400, 1],
       scale: [defaults.scale, 0.5, 3, 0.01],
+      visible: true,
     },
     { id: `product-placement-${placementKey}`, persist: true },
   );
@@ -94,6 +95,7 @@ export default function ProductCard({
   onDrop,
 }: Props) {
   const placement = useProductPlacement(product);
+  if (!placement.visible) return null;
   const spriteSheet = placement.scale >= 1.75 ? product.spriteSheet : gridSpriteSheet(product);
   const transform = `translate3d(${placement.x}cqw, ${-placement.y}cqh, ${placement.z}px) scale(${placement.scale})`;
   return (
