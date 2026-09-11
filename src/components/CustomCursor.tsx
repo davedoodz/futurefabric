@@ -17,6 +17,8 @@ export default function CustomCursor({ modal = false }: Props) {
 
     document.body.classList.add("has-custom-cursor");
     document.documentElement.classList.add("has-custom-cursor");
+    document.documentElement.style.setProperty("cursor", "none", "important");
+    document.body.style.setProperty("cursor", "none", "important");
     const el = ref.current;
     if (!el) return;
 
@@ -34,6 +36,8 @@ export default function CustomCursor({ modal = false }: Props) {
     return () => {
       document.body.classList.remove("has-custom-cursor");
       document.documentElement.classList.remove("has-custom-cursor");
+      document.documentElement.style.removeProperty("cursor");
+      document.body.style.removeProperty("cursor");
       window.removeEventListener("pointermove", onMove);
       document.documentElement.removeEventListener("mouseleave", onLeave);
     };
