@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { DialRoot, useDialKit } from "dialkit";
+import { useEffect, useState, type CSSProperties } from "react";
+import { DialRoot, DialStore, useDialKit } from "dialkit";
 import Header from "./components/Header";
 import CategoryTabs from "./components/CategoryTabs";
 import ProductGrid from "./components/ProductGrid";
@@ -8,13 +8,19 @@ import ProductFocusModal from "./components/ProductFocusModal";
 import SponsorLogos from "./components/SponsorLogos";
 import { setRotationSpeed } from "./components/SpriteViewer";
 import { CopyProvider, EditableText, useCopy } from "./lib/copy";
+import { scheduleSharedLayoutSave, saveSharedLayout } from "./lib/layoutPersistence";
 import { PRODUCTS, type Category, type Product } from "./data/products";
 
 function SaveAllButton() {
   const { saveCopy } = useCopy();
 
+  const handleSave = () => {
+    saveCopy();
+    void saveSharedLayout();
+  };
+
   return (
-    <button type="button" className="save-all-button" onClick={saveCopy}>
+    <button type="button" className="save-all-button" onClick={handleSave}>
       <EditableText copyKey="save.button" defaultValue="Save all values" />
     </button>
   );
@@ -30,6 +36,8 @@ export default function App() {
     {
       letterSpacing: [-0.08, -0.2, 0.1, 0.01],
       lineHeight: [1.1, 0.8, 2, 0.01],
+      productNameSize: [27, 12, 72, 1],
+      productNameLetterSpacing: [-0.08, -0.2, 0.2, 0.01],
       wordmarkGap: [12, 0, 80, 1],
       titleSubtitleGap: [8, 0, 80, 1],
       subtitlePillsGap: [24, 0, 120, 1],
@@ -42,17 +50,26 @@ export default function App() {
     },
     { id: "catalog-layout", persist: true },
   );
+  const interfaceControls = useDialKit(
+    "Interface",
+    { textEditing: true, objectGrab: true },
+    { id: "catalog-interface", persist: true },
+  );
   const [category, setCategory] = useState<Category>("Plant-based cellulosic");
   const [darkMode, setDarkMode] = useState(false);
-  const filtered = useMemo(() => PRODUCTS.filter((p) => p.category === category), [category]);
   const [focusedProduct, setFocusedProduct] = useState<Product | null>(null);
   useEffect(() => {
     setRotationSpeed(rotation.speed);
   }, [rotation.speed]);
-
+  useEffect(() => {
+    const unsubscribe = DialStore.subscribeGlobal(scheduleSharedLayoutSave);
+    return unsubscribe;
+  }, []);
   const layoutStyle = {
     "--layout-letter-spacing": `${layout.letterSpacing}em`,
     "--layout-line-height": layout.lineHeight,
+    "--layout-product-name-size": `${layout.productNameSize}px`,
+    "--layout-product-name-letter-spacing": `${layout.productNameLetterSpacing}em`,
     "--layout-wordmark-gap": `${layout.wordmarkGap}px`,
     "--layout-title-subtitle-gap": `${layout.titleSubtitleGap}px`,
     "--layout-subtitle-pills-gap": `${layout.subtitlePillsGap}px`,
@@ -64,7 +81,7 @@ export default function App() {
     "--layout-frame-height": `${layout.frameHeight}px`,
   } as CSSProperties;
   return (
-    <CopyProvider>
+    <CopyProvider editingEnabled={interfaceControls.textEditing}>
       <div className="page" data-dark-mode={darkMode} style={layoutStyle}>
         <DialRoot defaultOpen productionEnabled />
         <SaveAllButton />
@@ -72,10 +89,20 @@ export default function App() {
         <main className="page__content">
           <Header darkMode={darkMode} onToggleDarkMode={() => setDarkMode((current) => !current)} />
           <CategoryTabs active={category} onChange={setCategory} />
-          <ProductGrid products={filtered} paused={focusedProduct !== null} onSelect={setFocusedProduct} />
+          <ProductGrid
+            category={category}
+            products={PRODUCTS}
+            paused={focusedProduct !== null}
+            grabEnabled={interfaceControls.objectGrab}
+            onSelect={setFocusedProduct}
+          />
         </main>
         <SponsorLogos />
-        <ProductFocusModal product={focusedProduct} onClose={() => setFocusedProduct(null)} />
+        <ProductFocusModal
+          product={focusedProduct}
+          onClose={() => setFocusedProduct(null)}
+          grabEnabled={interfaceControls.objectGrab}
+        />
       </div>
     </CopyProvider>
   );

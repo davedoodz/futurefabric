@@ -54,6 +54,7 @@ interface Props {
   className?: string;
   eager?: boolean;
   paused?: boolean;
+  grabEnabled?: boolean;
   onActivate?: () => void;
   transform?: string;
 }
@@ -71,6 +72,7 @@ export default function SpriteViewer({
   className = "",
   eager = false,
   paused = false,
+  grabEnabled = true,
   onActivate,
   transform,
 }: Props) {
@@ -82,7 +84,16 @@ export default function SpriteViewer({
   const heldRef = useRef(false);
   const hoveredRef = useRef(false);
   const pausedRef = useRef(paused);
+  const grabEnabledRef = useRef(grabEnabled);
 
+  useEffect(() => {
+    grabEnabledRef.current = grabEnabled;
+    if (!grabEnabled) {
+      dragStartRef.current = null;
+      draggedRef.current = false;
+      heldRef.current = false;
+    }
+  }, [grabEnabled]);
   useEffect(() => {
     pausedRef.current = paused;
   }, [paused]);
@@ -165,9 +176,8 @@ export default function SpriteViewer({
       unsubscribeIfSubscribed();
     };
   }, [eager, renderFrame, src]);
-
   const handlePointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    if (event.button !== 0) return;
+    if (!grabEnabledRef.current || event.button !== 0) return;
     draggedRef.current = false;
     heldRef.current = false;
     dragStartRef.current = {
@@ -180,6 +190,7 @@ export default function SpriteViewer({
   };
 
   const handlePointerMove = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (!grabEnabledRef.current) return;
     const dragStart = dragStartRef.current;
     if (!dragStart || dragStart.pointerId !== event.pointerId) return;
 

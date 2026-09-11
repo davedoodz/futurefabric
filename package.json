@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@vercel/blob": "^2.8.0",
     "dialkit": "^2.0.0",
     "flubber": "^0.4.2",
     "motion": "^12.43.0",

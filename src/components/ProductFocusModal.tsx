@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import type { Product } from "../data/products";
-import { EditableText } from "../lib/copy";
+import { PRODUCT_INFO } from "../data/productInfo";
 import SpriteViewer from "./SpriteViewer";
+import CustomCursor from "./CustomCursor";
 
 // Buffer above the 220ms `focus-product-out` CSS animation (index.css) so the
 // dialog still closes if the animationend event never fires (e.g. animation
@@ -12,9 +13,10 @@ const CLOSE_FALLBACK_MS = 300;
 interface Props {
   product: Product | null;
   onClose: () => void;
+  grabEnabled: boolean;
 }
 
-export default function ProductFocusModal({ product, onClose }: Props) {
+export default function ProductFocusModal({ product, onClose, grabEnabled }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [closing, setClosing] = useState(false);
   const closeTimeoutRef = useRef<number | null>(null);
@@ -79,6 +81,7 @@ export default function ProductFocusModal({ product, onClose }: Props) {
       }}
       onClick={handleBackdropClick}
     >
+      <CustomCursor modal />
       {product ? (
         <div
           className="product-focus__content"
@@ -98,10 +101,38 @@ export default function ProductFocusModal({ product, onClose }: Props) {
             alt={product.alt}
             className="sprite-viewer--focus"
             eager
+            grabEnabled={grabEnabled}
           />
-          <button type="button" className="product-focus__close" onClick={requestClose} aria-label="Close full-screen view">
-            <EditableText copyKey="modal.close" defaultValue="Close" />
-          </button>
+          <section className="product-focus__bar" aria-label={`${product.name} specifications`}>
+            <div className="product-focus__identity">
+              <p className="product-focus__code">{product.code}</p>
+              <h2 className="product-focus__title">{product.name}</h2>
+              <p className="product-focus__companies">{product.companies}</p>
+            </div>
+            <dl className="product-focus__specs">
+              <div>
+                <dt>Material</dt>
+                <dd>{PRODUCT_INFO[product.code].material}</dd>
+              </div>
+              <div>
+                <dt>Construction</dt>
+                <dd>{PRODUCT_INFO[product.code].construction}</dd>
+              </div>
+              <div>
+                <dt>Origin</dt>
+                <dd>{PRODUCT_INFO[product.code].origin}</dd>
+              </div>
+            </dl>
+            <a
+              className="product-focus__link"
+              href={PRODUCT_INFO[product.code].productUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <span>View product page</span>
+              <span className="material-symbols-outlined" aria-hidden="true">arrow_outward</span>
+            </a>
+          </section>
         </div>
       ) : null}
     </dialog>

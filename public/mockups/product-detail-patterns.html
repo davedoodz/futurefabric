@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FutureFabric — Product detail patterns</title>
+<style>
+  :root {
+    --ink: #0a0a0a;
+    --paper: #f4f2ee;
+    --mist: #8f8a82;
+    --line: #d8d3ca;
+    --accent: #2f5233;
+    --sand: #e7e0d3;
+    font-synthesis: none;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .sprite {
+    background-repeat: no-repeat;
+    background-size: 600% 600%;
+    background-position: 0% 0%;
+    background-color: #fff;
+  }
+
+  /* ---------- Page chrome ---------- */
+  .switcher {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    display: flex;
+    gap: 6px;
+    padding: 14px 20px;
+    background: rgba(244, 242, 238, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+    overflow-x: auto;
+  }
+  .switcher button {
+    flex: 0 0 auto;
+    border: 1px solid var(--ink);
+    background: #fff;
+    color: var(--ink);
+    font: 600 12px/1 "Helvetica Neue", sans-serif;
+    letter-spacing: 0.02em;
+    padding: 10px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .switcher button[data-active="true"] {
+    background: var(--ink);
+    color: #fff;
+  }
+  .stage {
+    padding: 48px 20px 120px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .stage h1 {
+    font-size: 22px;
+    letter-spacing: -0.02em;
+    margin: 0 0 4px;
+  }
+  .stage .stage-note {
+    color: var(--mist);
+    font-size: 13px;
+    margin: 0 0 32px;
+    max-width: 60ch;
+  }
+  .panel { display: none; }
+  .panel[data-active="true"] { display: block; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+  }
+  @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+  .card {
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+  .card:hover { border-color: var(--ink); }
+  .card__img { width: 100%; aspect-ratio: 1; }
+  .card__body { padding: 12px 14px 16px; }
+  .card__code { font-size: 11px; color: var(--mist); letter-spacing: 0.04em; margin: 0 0 4px; }
+  .card__name { font-size: 14px; font-weight: 600; margin: 0 0 2px; letter-spacing: -0.01em; }
+  .card__companies { font-size: 12px; color: var(--mist); margin: 0; }
+
+  /* ---------- 1. Slide-in spec drawer ---------- */
+  .drawer-scrim {
+    position: fixed; inset: 0; background: rgba(10, 10, 10, 0.35);
+    opacity: 0; pointer-events: none; transition: opacity 0.25s ease; z-index: 50;
+  }
+  .drawer-scrim[data-open="true"] { opacity: 1; pointer-events: auto; }
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: min(420px, 92vw);
+    background: #fff;
+    box-shadow: -24px 0 60px rgba(0,0,0,0.18);
+    transform: translateX(100%);
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 51;
+    display: flex; flex-direction: column;
+  }
+  .drawer[data-open="true"] { transform: translateX(0); }
+  .drawer__hero { aspect-ratio: 4/3; }
+  .drawer__body { padding: 24px 28px 32px; overflow-y: auto; }
+  .drawer__close {
+    position: absolute; top: 16px; right: 16px;
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 1px solid var(--ink); background: #fff; cursor: pointer;
+    font-size: 16px; line-height: 1;
+  }
+  .drawer__code { font-size: 11px; color: var(--mist); letter-spacing: 0.06em; margin: 0 0 6px; }
+  .drawer__title { font-size: 22px; letter-spacing: -0.02em; margin: 0 0 4px; }
+  .drawer__companies { font-size: 13px; color: var(--mist); margin: 0 0 20px; }
+  .spec-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+  .spec-tabs button {
+    border: none; background: none; padding: 8px 4px; margin-right: 16px;
+    font: 600 12px/1 "Helvetica Neue", sans-serif; color: var(--mist); cursor: pointer;
+    border-bottom: 2px solid transparent;
+  }
+  .spec-tabs button[data-active="true"] { color: var(--ink); border-color: var(--ink); }
+  .spec-row {
+    display: flex; justify-content: space-between; gap: 12px;
+    padding: 10px 0; border-bottom: 1px solid var(--line);
+    font-size: 13px;
+  }
+  .spec-row span:first-child { color: var(--mist); }
+  .spec-row span:last-child { font-weight: 600; text-align: right; }
+  .link-list { list-style: none; margin: 18px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .link-list a {
+    display: flex; align-items: center; justify-content: space-between;
+    border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px;
+    text-decoration: none; color: var(--ink); font-size: 13px; font-weight: 600;
+  }
+  .link-list a:hover { border-color: var(--ink); }
+  .link-list a::after { content: "→"; color: var(--mist); font-weight: 400; }
+
+  /* ---------- 2. Flip ticket ---------- */
+  .ticket-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  @media (max-width: 900px) { .ticket-grid { grid-template-columns: repeat(2, 1fr); } }
+  .ticket { perspective: 1400px; aspect-ratio: 3/4.4; cursor: pointer; }
+  .ticket__inner {
+    position: relative; width: 100%; height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .ticket[data-flipped="true"] .ticket__inner { transform: rotateY(180deg); }
+  .ticket__face {
+    position: absolute; inset: 0; backface-visibility: hidden;
+    border: 1px solid var(--ink); border-radius: 14px; background: #fff;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .ticket__front .card__img { flex: 1; }
+  .ticket__front .card__body { border-top: 1px dashed var(--line); }
+  .ticket__back { transform: rotateY(180deg); padding: 20px; justify-content: flex-start; }
+  .ticket__back .drawer__code { margin-top: 0; }
+  .ticket__back .spec-row { font-size: 12px; padding: 8px 0; }
+  .ticket__back .link-list a { font-size: 12px; padding: 8px 10px; }
+  .ticket__hint {
+    margin-top: auto; padding-top: 10px; font-size: 11px; color: var(--mist);
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* ---------- 3. Inline accordion ---------- */
+  .accordion-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; align-items: start; }
+  @media (max-width: 900px) { .accordion-grid { grid-template-columns: repeat(2, 1fr); } }
+  .acc-card {
+    border: 1px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden;
+    grid-column: span 1; transition: grid-column 0.2s ease;
+  }
+  .acc-card[data-open="true"] { grid-column: span 2; border-color: var(--ink); }
+  .acc-card__top { display: flex; cursor: pointer; }
+  .acc-card__top .card__img { width: 42%; aspect-ratio: 1; flex-shrink: 0; }
+  .acc-card__top .card__body { flex: 1; padding: 14px 16px; }
+  .acc-num { font-size: 11px; color: var(--mist); }
+  .acc-toggle {
+    width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--ink);
+    background: #fff; margin-left: auto; flex-shrink: 0; align-self: flex-start;
+    font-size: 14px; line-height: 1; cursor: pointer;
+  }
+  .acc-card__details {
+    max-height: 0; overflow: hidden; transition: max-height 0.28s ease;
+    border-top: 1px solid var(--line);
+  }
+  .acc-card[data-open="true"] .acc-card__details { max-height: 320px; }
+  .acc-card__details-inner { padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 700px) { .acc-card__details-inner { grid-template-columns: 1fr; } }
+
+  /* ---------- 4. Bottom sheet with filter-catalog language ---------- */
+  .sheet-scrim {
+    position: fixed; inset: 0; background: rgba(10,10,10,0.4);
+    opacity: 0; pointer-events: none; transition: opacity 0.25s ease; z-index: 50;
+  }
+  .sheet-scrim[data-open="true"] { opacity: 1; pointer-events: auto; }
+  .sheet {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    max-height: 78vh;
+    background: #fff; border-radius: 20px 20px 0 0;
+    box-shadow: 0 -20px 60px rgba(0,0,0,0.2);
+    transform: translateY(100%);
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 51; overflow-y: auto;
+  }
+  .sheet[data-open="true"] { transform: translateY(0); }
+  .sheet__grabber { width: 40px; height: 4px; border-radius: 2px; background: var(--line); margin: 12px auto; }
+  .sheet__content { display: grid; grid-template-columns: 1fr 1.2fr; gap: 32px; padding: 8px 32px 36px; }
+  @media (max-width: 800px) { .sheet__content { grid-template-columns: 1fr; } }
+  .sheet__hero { aspect-ratio: 1; border-radius: 12px; }
+  .spec-pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 20px; }
+  .spec-pill {
+    border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px;
+    font-size: 12px; color: var(--mist);
+  }
+  .spec-pill strong { color: var(--ink); display: block; font-size: 13px; }
+  .sheet__cta-row { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+  .sheet__cta-row a {
+    border: 1px solid var(--ink); border-radius: 999px; padding: 10px 18px;
+    font-size: 12px; font-weight: 600; text-decoration: none; color: var(--ink);
+  }
+  .sheet__cta-row a[data-primary="true"] { background: var(--ink); color: #fff; }
+
+  /* ---------- 5. Anchored popover ---------- */
+  .popover-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; position: relative; }
+  @media (max-width: 900px) { .popover-grid { grid-template-columns: repeat(2, 1fr); } }
+  .popover {
+    position: absolute; width: 260px;
+    background: #fff; border: 1px solid var(--ink); border-radius: 12px;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.16);
+    padding: 16px 18px; z-index: 30;
+    opacity: 0; transform: translateY(6px) scale(0.98);
+    pointer-events: none; transition: opacity 0.16s ease, transform 0.16s ease;
+  }
+  .popover[data-open="true"] { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+  .popover__arrow {
+    position: absolute; top: -6px; left: 24px; width: 12px; height: 12px;
+    background: #fff; border-left: 1px solid var(--ink); border-top: 1px solid var(--ink);
+    transform: rotate(45deg);
+  }
+  .popover .spec-row { font-size: 12px; padding: 6px 0; }
+  .popover .link-list a { font-size: 12px; padding: 8px 10px; }
+  .popover__title { font-size: 14px; font-weight: 700; margin: 0 0 2px; }
+  .popover__sub { font-size: 11px; color: var(--mist); margin: 0 0 10px; }
+</style>
+</head>
+<body>
+
+<nav class="switcher" id="switcher">
+  <button data-target="drawer" data-active="true">1 · Slide-in drawer</button>
+  <button data-target="ticket">2 · Flip ticket</button>
+  <button data-target="accordion">3 · Inline accordion</button>
+  <button data-target="sheet">4 · Bottom sheet</button>
+  <button data-target="popover">5 · Anchored popover</button>
+</nav>
+
+<main class="stage">
+
+  <!-- 1. SLIDE-IN DRAWER -->
+  <section class="panel" id="panel-drawer" data-active="true">
+    <h1>1 · Slide-in spec drawer</h1>
+    <p class="stage-note">Click a card — a drawer slides from the right with tabbed specs (Overview / Materials / Impact) and a stack of outbound links, similar to a product-detail sidebar.</p>
+    <div class="grid" id="grid-drawer"></div>
+  </section>
+
+  <!-- 2. FLIP TICKET -->
+  <section class="panel" id="panel-ticket">
+    <h1>2 · Flip ticket</h1>
+    <p class="stage-note">Click a card — it flips 180° like a lab ticket, revealing specs and links on the reverse face. Click again (or the "back to front" hint) to flip back.</p>
+    <div class="ticket-grid" id="grid-ticket"></div>
+  </section>
+
+  <!-- 3. INLINE ACCORDION -->
+  <section class="panel" id="panel-accordion">
+    <h1>3 · Inline accordion</h1>
+    <p class="stage-note">Click a card — it expands in place within the grid (numbered-list style), pushing neighbors aside to reveal specs and links without leaving the page.</p>
+    <div class="accordion-grid" id="grid-accordion"></div>
+  </section>
+
+  <!-- 4. BOTTOM SHEET -->
+  <section class="panel" id="panel-sheet">
+    <h1>4 · Bottom sheet</h1>
+    <p class="stage-note">Click a card — a full-width sheet rises from the bottom with a large hero, pill-style spec chips, and primary/secondary link buttons.</p>
+    <div class="grid" id="grid-sheet"></div>
+  </section>
+
+  <!-- 5. ANCHORED POPOVER -->
+  <section class="panel" id="panel-popover">
+    <h1>5 · Anchored popover</h1>
+    <p class="stage-note">Click a card — a compact popover opens right next to it (catalog-browse style), showing a condensed spec table and link chips without leaving the grid.</p>
+    <div class="popover-grid" id="grid-popover"></div>
+  </section>
+
+</main>
+
+<!-- Drawer markup -->
+<div class="drawer-scrim" id="drawer-scrim"></div>
+<div class="drawer" id="drawer">
+  <button class="drawer__close" id="drawer-close">×</button>
+  <div class="drawer__hero sprite" id="drawer-hero"></div>
+  <div class="drawer__body">
+    <p class="drawer__code" id="drawer-code"></p>
+    <h2 class="drawer__title" id="drawer-title"></h2>
+    <p class="drawer__companies" id="drawer-companies"></p>
+    <div class="spec-tabs" id="drawer-tabs">
+      <button data-tab="overview" data-active="true">Overview</button>
+      <button data-tab="materials">Materials</button>
+      <button data-tab="impact">Impact</button>
+    </div>
+    <div id="drawer-tab-content"></div>
+    <ul class="link-list" id="drawer-links"></ul>
+  </div>
+</div>
+
+<!-- Sheet markup -->
+<div class="sheet-scrim" id="sheet-scrim"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet__grabber"></div>
+  <div class="sheet__content">
+    <div class="sheet__hero sprite" id="sheet-hero"></div>
+    <div>
+      <p class="drawer__code" id="sheet-code"></p>
+      <h2 class="drawer__title" id="sheet-title"></h2>
+      <p class="drawer__companies" id="sheet-companies"></p>
+      <div class="spec-pill-row" id="sheet-specs"></div>
+      <div class="sheet__cta-row" id="sheet-links"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PRODUCTS = [
+  {
+    code: "MFB-01",
+    name: "Ephea mycelium coat",
+    companies: "Balenciaga · Fall/Winter 2022",
+    sprite: "/spritesheets-36/grid/balenciaga-ephea-mycelium-coat-fw2022-spritesheet.webp",
+    specs: { Material: "Mycelium leather (Ephea)", Season: "FW 2022", Origin: "Paris, France", Weight: "1.4 kg" },
+    materials: { Base: "Mycelium composite", Lining: "Organic cotton", Hardware: "Recycled brass", Certification: "Cradle to Cradle Silver" },
+    impact: { "CO2 vs leather": "−87%", Water: "−92%", Biodegradable: "Yes", "End of life": "Compostable" },
+    links: [
+      { label: "Runway feature — Vogue", href: "#" },
+      { label: "Material profile — Ephea", href: "#" },
+      { label: "Balenciaga FW22 collection", href: "#" },
+    ],
+  },
+  {
+    code: "PBC-01",
+    name: "Happy Pineapple sneakers",
+    companies: "Nike × Piñatex",
+    sprite: "/spritesheets-36/grid/nike-partners-with-pinatex-for-happy-pineapple-plant-based-sneaker-collection-spritesheet.webp",
+    specs: { Material: "Piñatex (pineapple leaf fiber)", Season: "2023 capsule", Origin: "Philippines fiber, Vietnam assembly", Weight: "0.6 kg / pair" },
+    materials: { Upper: "Piñatex", Sole: "Nike Grind rubber", Laces: "Recycled polyester", Certification: "Higg Index verified" },
+    impact: { "CO2 vs leather": "−75%", Water: "−95%", Biodegradable: "Partial", "End of life": "Recyclable sole" },
+    links: [
+      { label: "Nike sustainability report", href: "#" },
+      { label: "Ananas Anam — Piñatex", href: "#" },
+      { label: "Launch story — Hypebeast", href: "#" },
+    ],
+  },
+  {
+    code: "BSP-01",
+    name: "VEGEA Frayme bag",
+    companies: "Stella McCartney × Veuve Clicquot",
+    sprite: "/spritesheets-36/grid/stella-mccartney-x-veuve-clicquot-vegea-frayme-grape-waste-woven-bag-spritesheet.webp",
+    specs: { Material: "VEGEA grape-waste leather", Season: "Limited edition", Origin: "Italy", Weight: "0.9 kg" },
+    materials: { Base: "Grape marc composite", Lining: "GRS recycled polyester", Hardware: "Palladium-finish zinc", Certification: "GRS certified" },
+    impact: { "CO2 vs leather": "−68%", Water: "−80%", Biodegradable: "No", "End of life": "Mono-material recyclable" },
+    links: [
+      { label: "VEGEA material science", href: "#" },
+      { label: "Stella McCartney sustainability", href: "#" },
+      { label: "Veuve Clicquot collab story", href: "#" },
+    ],
+  },
+  {
+    code: "PRO-01",
+    name: "Wool Runners",
+    companies: "Allbirds",
+    sprite: "/spritesheets-36/grid/allbirds-wool-runners-spritesheet.webp",
+    specs: { Material: "ZQ Merino wool", Season: "Core collection", Origin: "New Zealand wool, Vietnam assembly", Weight: "0.55 kg / pair" },
+    materials: { Upper: "Merino wool", Sole: "SweetFoam (sugarcane)", Insole: "Castor bean oil foam", Certification: "ZQ Merino, B Corp" },
+    impact: { "Carbon footprint": "8.03 kg CO2e", Water: "Low-impact dyeing", Biodegradable: "Mostly", "End of life": "Take-back program" },
+    links: [
+      { label: "Allbirds carbon footprint label", href: "#" },
+      { label: "ZQ Merino standard", href: "#" },
+      { label: "B Corp profile", href: "#" },
+    ],
+  },
+];
+
+function spriteStyle(url) { return `background-image:url('${url}')`; }
+
+function buildSpecRows(obj) {
+  return Object.entries(obj).map(([k, v]) => `<div class="spec-row"><span>${k}</span><span>${v}</span></div>`).join("");
+}
+function buildLinks(links) {
+  return links.map((l) => `<li><a href="${l.href}" target="_blank" rel="noreferrer">${l.label}</a></li>`).join("");
+}
+function buildPillRow(obj) {
+  return Object.entries(obj).map(([k, v]) => `<div class="spec-pill">${k}<strong>${v}</strong></div>`).join("");
+}
+function buildLinkButtons(links) {
+  return links.map((l, i) => `<a href="${l.href}" target="_blank" rel="noreferrer" data-primary="${i === 0}">${l.label}</a>`).join("");
+}
+
+// ---------- Switcher ----------
+document.getElementById("switcher").addEventListener("click", (e) => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  document.querySelectorAll("#switcher button").forEach((b) => b.dataset.active = String(b === btn));
+  document.querySelectorAll(".panel").forEach((p) => p.dataset.active = String(p.id === `panel-${btn.dataset.target}`));
+});
+
+// ---------- 1. Drawer ----------
+const gridDrawer = document.getElementById("grid-drawer");
+PRODUCTS.forEach((p) => {
+  const card = document.createElement("article");
+  card.className = "card";
+  card.innerHTML = `<div class="card__img sprite" style="${spriteStyle(p.sprite)}"></div>
+    <div class="card__body"><p class="card__code">${p.code}</p><h3 class="card__name">${p.name}</h3><p class="card__companies">${p.companies}</p></div>`;
+  card.addEventListener("click", () => openDrawer(p));
+  gridDrawer.appendChild(card);
+});
+
+const drawer = document.getElementById("drawer");
+const drawerScrim = document.getElementById("drawer-scrim");
+let currentDrawerProduct = null;
+let currentDrawerTab = "overview";
+
+function renderDrawerTab() {
+  const p = currentDrawerProduct;
+  if (!p) return;
+  const data = currentDrawerTab === "overview" ? p.specs : currentDrawerTab === "materials" ? p.materials : p.impact;
+  document.getElementById("drawer-tab-content").innerHTML = buildSpecRows(data);
+}
+
+function openDrawer(p) {
+  currentDrawerProduct = p;
+  currentDrawerTab = "overview";
+  document.getElementById("drawer-hero").style.backgroundImage = `url('${p.sprite}')`;
+  document.getElementById("drawer-code").textContent = p.code;
+  document.getElementById("drawer-title").textContent = p.name;
+  document.getElementById("drawer-companies").textContent = p.companies;
+  document.getElementById("drawer-links").innerHTML = buildLinks(p.links);
+  document.querySelectorAll("#drawer-tabs button").forEach((b) => b.dataset.active = String(b.dataset.tab === "overview"));
+  renderDrawerTab();
+  drawer.dataset.open = "true";
+  drawerScrim.dataset.open = "true";
+}
+function closeDrawer() {
+  drawer.dataset.open = "false";
+  drawerScrim.dataset.open = "false";
+}
+document.getElementById("drawer-close").addEventListener("click", closeDrawer);
+drawerScrim.addEventListener("click", closeDrawer);
+document.getElementById("drawer-tabs").addEventListener("click", (e) => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  currentDrawerTab = btn.dataset.tab;
+  document.querySelectorAll("#drawer-tabs button").forEach((b) => b.dataset.active = String(b === btn));
+  renderDrawerTab();
+});
+
+// ---------- 2. Flip ticket ----------
+const gridTicket = document.getElementById("grid-ticket");
+PRODUCTS.forEach((p) => {
+  const ticket = document.createElement("article");
+  ticket.className = "ticket";
+  ticket.innerHTML = `
+    <div class="ticket__inner">
+      <div class="ticket__face ticket__front">
+        <div class="card__img sprite" style="${spriteStyle(p.sprite)}"></div>
+        <div class="card__body">
+          <p class="card__code">${p.code}</p>
+          <h3 class="card__name">${p.name}</h3>
+          <p class="card__companies">${p.companies}</p>
+        </div>
+      </div>
+      <div class="ticket__face ticket__back">
+        <p class="drawer__code">${p.code} — Specs</p>
+        ${buildSpecRows(p.specs)}
+        <ul class="link-list">${buildLinks(p.links)}</ul>
+        <p class="ticket__hint">↺ Click to flip back</p>
+      </div>
+    </div>`;
+  ticket.addEventListener("click", (e) => {
+    if (e.target.closest("a")) return;
+    ticket.dataset.flipped = String(ticket.dataset.flipped !== "true");
+  });
+  gridTicket.appendChild(ticket);
+});
+
+// ---------- 3. Inline accordion ----------
+const gridAccordion = document.getElementById("grid-accordion");
+PRODUCTS.forEach((p, i) => {
+  const card = document.createElement("article");
+  card.className = "acc-card";
+  card.innerHTML = `
+    <div class="acc-card__top">
+      <div class="card__img sprite" style="${spriteStyle(p.sprite)}"></div>
+      <div class="card__body">
+        <p class="acc-num">${String(i + 1).padStart(2, "0")} — ${p.code}</p>
+        <h3 class="card__name">${p.name}</h3>
+        <p class="card__companies">${p.companies}</p>
+      </div>
+      <button class="acc-toggle">+</button>
+    </div>
+    <div class="acc-card__details">
+      <div class="acc-card__details-inner">
+        <div>${buildSpecRows(p.specs)}</div>
+        <ul class="link-list">${buildLinks(p.links)}</ul>
+      </div>
+    </div>`;
+  const toggle = () => {
+    const willOpen = card.dataset.open !== "true";
+    document.querySelectorAll(".acc-card").forEach((c) => { c.dataset.open = "false"; c.querySelector(".acc-toggle").textContent = "+"; });
+    if (willOpen) { card.dataset.open = "true"; card.querySelector(".acc-toggle").textContent = "×"; }
+  };
+  card.querySelector(".acc-card__top").addEventListener("click", (e) => { if (!e.target.closest("a")) toggle(); });
+  gridAccordion.appendChild(card);
+});
+
+// ---------- 4. Bottom sheet ----------
+const gridSheet = document.getElementById("grid-sheet");
+PRODUCTS.forEach((p) => {
+  const card = document.createElement("article");
+  card.className = "card";
+  card.innerHTML = `<div class="card__img sprite" style="${spriteStyle(p.sprite)}"></div>
+    <div class="card__body"><p class="card__code">${p.code}</p><h3 class="card__name">${p.name}</h3><p class="card__companies">${p.companies}</p></div>`;
+  card.addEventListener("click", () => openSheet(p));
+  gridSheet.appendChild(card);
+});
+const sheet = document.getElementById("sheet");
+const sheetScrim = document.getElementById("sheet-scrim");
+function openSheet(p) {
+  document.getElementById("sheet-hero").style.backgroundImage = `url('${p.sprite}')`;
+  document.getElementById("sheet-code").textContent = p.code;
+  document.getElementById("sheet-title").textContent = p.name;
+  document.getElementById("sheet-companies").textContent = p.companies;
+  document.getElementById("sheet-specs").innerHTML = buildPillRow(p.specs);
+  document.getElementById("sheet-links").innerHTML = buildLinkButtons(p.links);
+  sheet.dataset.open = "true";
+  sheetScrim.dataset.open = "true";
+}
+function closeSheet() { sheet.dataset.open = "false"; sheetScrim.dataset.open = "false"; }
+sheetScrim.addEventListener("click", closeSheet);
+
+// ---------- 5. Anchored popover ----------
+const gridPopover = document.getElementById("grid-popover");
+let openPopoverEl = null;
+PRODUCTS.forEach((p) => {
+  const card = document.createElement("article");
+  card.className = "card";
+  card.innerHTML = `<div class="card__img sprite" style="${spriteStyle(p.sprite)}"></div>
+    <div class="card__body"><p class="card__code">${p.code}</p><h3 class="card__name">${p.name}</h3><p class="card__companies">${p.companies}</p></div>`;
+
+  const popover = document.createElement("div");
+  popover.className = "popover";
+  popover.innerHTML = `<div class="popover__arrow"></div>
+    <p class="popover__title">${p.name}</p>
+    <p class="popover__sub">${p.code} · ${p.companies}</p>
+    ${buildSpecRows(p.specs)}
+    <ul class="link-list">${buildLinks(p.links)}</ul>`;
+
+  card.addEventListener("click", () => {
+    const isOpen = popover.dataset.open === "true";
+    document.querySelectorAll(".popover").forEach((el) => el.dataset.open = "false");
+    if (isOpen) { openPopoverEl = null; return; }
+    const cardRect = card.getBoundingClientRect();
+    const gridRect = gridPopover.getBoundingClientRect();
+    popover.style.top = `${cardRect.bottom - gridRect.top + 14}px`;
+    popover.style.left = `${cardRect.left - gridRect.left}px`;
+    popover.dataset.open = "true";
+    openPopoverEl = popover;
+  });
+
+  const wrapper = document.createElement("div");
+  wrapper.style.position = "relative";
+  wrapper.appendChild(card);
+  gridPopover.appendChild(wrapper);
+  gridPopover.appendChild(popover);
+});
+document.addEventListener("click", (e) => {
+  if (openPopoverEl && !e.target.closest(".popover") && !e.target.closest(".card")) {
+    openPopoverEl.dataset.open = "false";
+    openPopoverEl = null;
+  }
+});
+</script>
+</body>
+</html>
