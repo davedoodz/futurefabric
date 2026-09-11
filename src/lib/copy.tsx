@@ -1,4 +1,15 @@
-import { createContext, useContext, useEffect, useState, type ElementType, type FocusEvent, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type CSSProperties,
+  type ElementType,
+  type FocusEvent,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from "react";
 import { scheduleSharedLayoutSave } from "./layoutPersistence";
 
 const STORAGE_KEY = "futurefabric-copy";
@@ -50,18 +61,21 @@ interface EditableTextProps {
   defaultValue: string;
   as?: ElementType;
   className?: string;
+  style?: CSSProperties;
 }
 
-export function EditableText({ copyKey, defaultValue, as: Component = "span", className }: EditableTextProps) {
+export function EditableText({ copyKey, defaultValue, as: Component = "span", className, style }: EditableTextProps) {
   const { copy, updateCopy, editingEnabled } = useCopy();
   const value = copy[copyKey] ?? defaultValue;
 
   return (
     <Component
       className={className}
-      contentEditable={editingEnabled}
+      style={style}
+      contentEditable={editingEnabled ? "plaintext-only" : false}
       suppressContentEditableWarning
       spellCheck={editingEnabled}
+      tabIndex={editingEnabled ? 0 : undefined}
       data-copy-key={copyKey}
       onFocus={editingEnabled ? (event: FocusEvent<HTMLElement>) => {
         const selection = window.getSelection();
@@ -69,6 +83,13 @@ export function EditableText({ copyKey, defaultValue, as: Component = "span", cl
         range.selectNodeContents(event.currentTarget);
         selection?.removeAllRanges();
         selection?.addRange(range);
+      } : undefined}
+      onPointerDown={editingEnabled ? (event: ReactPointerEvent<HTMLElement>) => {
+        event.stopPropagation();
+      } : undefined}
+      onClick={editingEnabled ? (event: ReactMouseEvent<HTMLElement>) => {
+        event.preventDefault();
+        event.stopPropagation();
       } : undefined}
       onBlur={editingEnabled ? (event: FocusEvent<HTMLElement>) => updateCopy(copyKey, event.currentTarget.textContent ?? "") : undefined}
     >

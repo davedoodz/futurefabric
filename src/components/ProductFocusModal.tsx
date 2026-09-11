@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 import type { Product } from "../data/products";
 import { PRODUCT_INFO } from "../data/productInfo";
+import { EditableText } from "../lib/copy";
 import SpriteViewer from "./SpriteViewer";
 import CustomCursor from "./CustomCursor";
 
@@ -105,22 +106,50 @@ export default function ProductFocusModal({ product, onClose, grabEnabled }: Pro
           />
           <section className="product-focus__bar" aria-label={`${product.name} specifications`}>
             <div className="product-focus__identity">
-              <p className="product-focus__code">{product.code}</p>
-              <h2 className="product-focus__title">{product.name}</h2>
-              <p className="product-focus__companies">{product.companies}</p>
+              <EditableText
+                copyKey={`product.${product.code}.code`}
+                defaultValue={product.code}
+                as="p"
+                className="product-focus__code"
+              />
+              <EditableText
+                copyKey={`product.${product.code}.name`}
+                defaultValue={product.name}
+                as="h2"
+                className="product-focus__title"
+                style={{ "--product-title-fit-divisor": Math.max(product.name.length * 0.55, 1) } as CSSProperties}
+              />
+              <EditableText
+                copyKey={`product.${product.code}.companies`}
+                defaultValue={product.companies}
+                as="p"
+                className="product-focus__companies"
+              />
             </div>
             <dl className="product-focus__specs">
               <div>
-                <dt>Material</dt>
-                <dd>{PRODUCT_INFO[product.code].material}</dd>
+                <EditableText copyKey="modal.label.material" defaultValue="Material" as="dt" />
+                <EditableText
+                  copyKey={`product.${product.code}.material`}
+                  defaultValue={PRODUCT_INFO[product.code].material}
+                  as="dd"
+                />
               </div>
               <div>
-                <dt>Construction</dt>
-                <dd>{PRODUCT_INFO[product.code].construction}</dd>
+                <EditableText copyKey="modal.label.construction" defaultValue="Construction" as="dt" />
+                <EditableText
+                  copyKey={`product.${product.code}.construction`}
+                  defaultValue={PRODUCT_INFO[product.code].construction}
+                  as="dd"
+                />
               </div>
               <div>
-                <dt>Origin</dt>
-                <dd>{PRODUCT_INFO[product.code].origin}</dd>
+                <EditableText copyKey="modal.label.origin" defaultValue="Origin" as="dt" />
+                <EditableText
+                  copyKey={`product.${product.code}.origin`}
+                  defaultValue={PRODUCT_INFO[product.code].origin}
+                  as="dd"
+                />
               </div>
             </dl>
             <a
@@ -129,7 +158,7 @@ export default function ProductFocusModal({ product, onClose, grabEnabled }: Pro
               target="_blank"
               rel="noreferrer"
             >
-              <span>View product page</span>
+              <EditableText copyKey="modal.link.product" defaultValue="View product page" />
               <span className="material-symbols-outlined" aria-hidden="true">arrow_outward</span>
             </a>
           </section>

@@ -105,12 +105,13 @@ export default function ProductCard({
         </div>
       </div>
       <EditableText copyKey={`product.${product.code}.code`} defaultValue={product.code} as="p" className="product-card__code" />
-      <h3
+      <EditableText
+        copyKey={`product.${product.code}.name`}
+        defaultValue={product.name}
+        as="h3"
         className="product-card__name"
         style={{ "--product-title-fit-divisor": Math.max(product.name.length * 0.55, 1) } as CSSProperties}
-      >
-        {product.name}
-      </h3>
+      />
       <EditableText copyKey={`product.${product.code}.companies`} defaultValue={product.companies} as="p" className="product-card__companies" />
     </article>
   );

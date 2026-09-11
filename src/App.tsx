@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { DialRoot, useDialKit } from "dialkit";
 import Header from "./components/Header";
 import CategoryTabs from "./components/CategoryTabs";
@@ -61,7 +61,11 @@ export default function App() {
     { textEditing: true, objectGrab: true, productFrames: false },
     { id: "catalog-interface", persist: true },
   );
-  const [category, setCategory] = useState<Category>("Plant-based cellulosic");
+  const [category, setCategory] = useState<Category>("All products");
+  const filteredProducts = useMemo(
+    () => category === "All products" ? PRODUCTS : PRODUCTS.filter((product) => product.category === category),
+    [category],
+  );
   const [darkMode, setDarkMode] = useState(false);
   const [focusedProduct, setFocusedProduct] = useState<Product | null>(null);
   useEffect(() => {
@@ -99,7 +103,7 @@ export default function App() {
           <CategoryTabs active={category} onChange={setCategory} />
           <ProductGrid
             category={category}
-            products={PRODUCTS}
+            products={filteredProducts}
             paused={focusedProduct !== null}
             grabEnabled={interfaceControls.objectGrab}
             showFrames={interfaceControls.productFrames}
