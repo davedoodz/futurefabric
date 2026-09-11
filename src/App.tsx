@@ -58,7 +58,7 @@ export default function App() {
   );
   const interfaceControls = useDialKit(
     "Interface",
-    { textEditing: true, objectGrab: true },
+    { textEditing: true, objectGrab: true, productFrames: false },
     { id: "catalog-interface", persist: true },
   );
   const [category, setCategory] = useState<Category>("Plant-based cellulosic");
@@ -102,6 +102,7 @@ export default function App() {
             products={PRODUCTS}
             paused={focusedProduct !== null}
             grabEnabled={interfaceControls.objectGrab}
+            showFrames={interfaceControls.productFrames}
             onSelect={setFocusedProduct}
           />
         </main>

@@ -20,12 +20,8 @@ export default function CustomCursor({ modal = false }: Props) {
     if (!el) return;
 
     const onMove = (event: PointerEvent) => {
-      const hoveredObject = document
-        .elementFromPoint(event.clientX, event.clientY)
-        ?.closest(".sprite-viewer--card, .sprite-viewer--focus");
-      const size = hoveredObject ? 29 : 14.5;
-      el.dataset.large = hoveredObject ? "true" : "false";
-      el.style.transform = `translate3d(${event.clientX - size / 2}px, ${event.clientY - size / 2}px, 0)`;
+      el.style.setProperty("--cursor-x", `${event.clientX}px`);
+      el.style.setProperty("--cursor-y", `${event.clientY}px`);
       el.style.opacity = "1";
     };
     const onLeave = () => {

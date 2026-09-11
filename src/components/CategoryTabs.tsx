@@ -23,7 +23,14 @@ function CategoryIcon({ kind, size, x, y }: { kind: string; size: number; x: num
     height: size,
     viewBox: "0 0 48 48",
     "aria-hidden": true,
-    style: { transform: `translate(${x}px, ${y}px)`, flexShrink: 0 } as CSSProperties,
+    style: {
+      position: "absolute",
+      top: "50%",
+      left: "var(--pill-icon-inset, 16px)",
+      marginTop: size / -2,
+      transform: `translate(${x}px, ${y}px)`,
+      flexShrink: 0,
+    } as CSSProperties,
   };
   if (kind === "sprout") {
     return <svg {...common}><path d="M22 44V24H26V44Z M24 26C24 26 7 26 7 11C24 11 24 26 24 26Z M24 26C24 26 41 23 41 8C24 8 24 26 24 26Z" fill="currentColor" /></svg>;
@@ -51,9 +58,9 @@ export default function CategoryTabs({ active, onChange }: Props) {
     fontWeight: [400, 100, 900, 100],
     letterSpacing: [-0.08, -0.2, 0.3, 0.01],
     paddingY: [8, 0, 32, 1],
-    paddingX: [16, 0, 96, 1],
+    textSidePadding: [16, 0, 96, 1],
+    iconInset: [16, 0, 96, 1],
     spacing: [8, 0, 64, 1],
-    contentGap: [8, 0, 32, 1],
     width: [0, 0, 600, 1],
   }, { id: "category-pill-layout-under-title", persist: true });
 
@@ -66,10 +73,12 @@ export default function CategoryTabs({ active, onChange }: Props) {
   return (
     <nav className="category-tabs" data-orientation={layout.orientation} aria-label="Filter by material category" style={{
       "--pill-font-size": `${layout.fontSize}px`,
+      "--pill-font-weight": layout.fontWeight,
+      "--pill-letter-spacing": `${layout.letterSpacing}em`,
       "--pill-padding-y": `${layout.paddingY}px`,
-      "--pill-padding-x": `${layout.paddingX}px`,
+      "--pill-text-side-padding": `${layout.textSidePadding}px`,
+      "--pill-icon-inset": `${layout.iconInset}px`,
       "--pill-gap": `${layout.spacing}px`,
-      "--pill-content-gap": `${layout.contentGap}px`,
     } as CSSProperties}>
       {CATEGORIES.map((category) => {
         const iconLayout = iconLayouts[ICONS[category]];

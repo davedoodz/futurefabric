@@ -1,5 +1,5 @@
 import { useDialKit } from "dialkit";
-import type { DragEvent } from "react";
+import type { CSSProperties, DragEvent } from "react";
 import { gridSpriteSheet, type Product } from "../data/products";
 import { EditableText } from "../lib/copy";
 import SpriteViewer from "./SpriteViewer";
@@ -54,6 +54,7 @@ interface Props {
   product: Product;
   paused: boolean;
   grabEnabled: boolean;
+  showFrame: boolean;
   onSelect: (product: Product) => void;
   draggable?: boolean;
   isDragging?: boolean;
@@ -67,6 +68,7 @@ export default function ProductCard({
   product,
   paused,
   grabEnabled,
+  showFrame,
   onSelect,
   draggable = false,
   isDragging = false,
@@ -89,7 +91,7 @@ export default function ProductCard({
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
-      <div className="product-card__image">
+      <div className="product-card__image" data-frame={showFrame}>
         <div className="product-card__object">
           <SpriteViewer
             src={spriteSheet}
@@ -103,7 +105,12 @@ export default function ProductCard({
         </div>
       </div>
       <EditableText copyKey={`product.${product.code}.code`} defaultValue={product.code} as="p" className="product-card__code" />
-      <EditableText copyKey={`product.${product.code}.name`} defaultValue={product.name} as="h3" className="product-card__name" />
+      <h3
+        className="product-card__name"
+        style={{ "--product-title-fit-divisor": Math.max(product.name.length * 0.55, 1) } as CSSProperties}
+      >
+        {product.name}
+      </h3>
       <EditableText copyKey={`product.${product.code}.companies`} defaultValue={product.companies} as="p" className="product-card__companies" />
     </article>
   );
