@@ -125,7 +125,7 @@ export default function SpriteViewer({
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       subscribed = true;
       unsubscribe = subscribeToFrameTicker(() => {
-        if (!pausedRef.current && !hoveredRef.current && dragStartRef.current === null) {
+        if (!pausedRef.current && dragStartRef.current === null) {
           renderFrame(frameRef.current + 1);
         }
       });
