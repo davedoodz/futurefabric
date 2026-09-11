@@ -16,6 +16,7 @@ export default function CustomCursor({ modal = false }: Props) {
     if (isCoarsePointer) return;
 
     document.body.classList.add("has-custom-cursor");
+    document.documentElement.classList.add("has-custom-cursor");
     const el = ref.current;
     if (!el) return;
 
@@ -32,6 +33,7 @@ export default function CustomCursor({ modal = false }: Props) {
     document.documentElement.addEventListener("mouseleave", onLeave);
     return () => {
       document.body.classList.remove("has-custom-cursor");
+      document.documentElement.classList.remove("has-custom-cursor");
       window.removeEventListener("pointermove", onMove);
       document.documentElement.removeEventListener("mouseleave", onLeave);
     };

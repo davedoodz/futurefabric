@@ -49,6 +49,11 @@ body:has(.page[data-dark-mode="true"]) {
   color: #000000;
 }
 
+html.has-custom-cursor,
+html.has-custom-cursor * {
+  cursor: none !important;
+}
+
 body.has-custom-cursor,
 body.has-custom-cursor * {
   cursor: none !important;
