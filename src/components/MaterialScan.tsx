@@ -19,7 +19,8 @@ export default function MaterialScan({ product, paused }: { product: Product; pa
   const [pageVisible, setPageVisible] = useState(!document.hidden);
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting));
-    if (root.current) observer.observe(root.current);
+    const card = root.current?.closest(".product-card");
+    if (card) observer.observe(card);
     const onVisibility = () => setPageVisible(!document.hidden);
     document.addEventListener("visibilitychange", onVisibility);
     return () => {
@@ -46,8 +47,7 @@ export default function MaterialScan({ product, paused }: { product: Product; pa
         <div className="material-scan__sweep" />
         <div className="material-scan__crosshair">+</div>
         <svg className="material-scan__bonds" viewBox="0 0 110 45">
-          <path d="M4 23H22L34 5L57 5L70 23L57 41H34L22 23M70 23H89L105 8M34 10H55M34 36H55" />
-          <text x="1" y="19">O</text><text x="86" y="19">O</text>
+          <path d="M4 23H22L34 5L57 5L70 23L57 41H34L22 23M70 23H89L105 8" />
         </svg>
       </div>
       {photo ? (
@@ -57,7 +57,7 @@ export default function MaterialScan({ product, paused }: { product: Product; pa
             <figcaption>01 / ARCHIVE</figcaption>
           </figure>
           <figure className="material-scan__photo material-scan__photo--detail">
-            <div><img src={photo} alt={`Cropped surface of ${PRODUCT_INFO[product.code].material}`} loading="lazy" /></div>
+            <div><img src={`/material-scans/${product.code}-surface.webp`} alt={`Cropped surface of ${PRODUCT_INFO[product.code].material}`} loading="lazy" /></div>
             <figcaption>02 / SURFACE CROP</figcaption>
           </figure>
         </div>
