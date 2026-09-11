@@ -107,6 +107,7 @@ export default function App() {
             paused={focusedProduct !== null}
             grabEnabled={interfaceControls.objectGrab}
             showFrames={interfaceControls.productFrames}
+            darkMode={darkMode}
             onSelect={setFocusedProduct}
           />
         </main>

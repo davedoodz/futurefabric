@@ -3,6 +3,7 @@ import type { CSSProperties, DragEvent } from "react";
 import { gridSpriteSheet, type Product } from "../data/products";
 import { EditableText } from "../lib/copy";
 import SpriteViewer from "./SpriteViewer";
+import MaterialScan from "./MaterialScan";
 
 const PLACEMENT_LIMIT = 40;
 const DEFAULT_PLACEMENTS: Record<string, { x: number; y: number; z: number; scale: number }> = {
@@ -55,6 +56,7 @@ interface Props {
   paused: boolean;
   grabEnabled: boolean;
   showFrame: boolean;
+  darkMode: boolean;
   onSelect: (product: Product) => void;
   draggable?: boolean;
   isDragging?: boolean;
@@ -69,6 +71,7 @@ export default function ProductCard({
   paused,
   grabEnabled,
   showFrame,
+  darkMode,
   onSelect,
   draggable = false,
   isDragging = false,
@@ -104,6 +107,7 @@ export default function ProductCard({
           />
         </div>
       </div>
+      {darkMode ? <MaterialScan product={product} paused={paused} /> : null}
       <EditableText copyKey={`product.${product.code}.code`} defaultValue={product.code} as="p" className="product-card__code" />
       <EditableText
         copyKey={`product.${product.code}.name`}

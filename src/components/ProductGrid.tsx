@@ -12,6 +12,7 @@ interface Props {
   paused: boolean;
   grabEnabled: boolean;
   showFrames: boolean;
+  darkMode: boolean;
   onSelect: (product: Product) => void;
 }
 
@@ -32,7 +33,7 @@ function readStoredOrder(category: Category, products: Product[]) {
     return products;
   }
 }
-export default function ProductGrid({ category, products, paused, grabEnabled, showFrames, onSelect }: Props) {
+export default function ProductGrid({ category, products, paused, grabEnabled, showFrames, darkMode, onSelect }: Props) {
   const [orderedProducts, setOrderedProducts] = useState(() => readStoredOrder(category, products));
   const [draggedCode, setDraggedCode] = useState<string | null>(null);
 
@@ -79,6 +80,7 @@ export default function ProductGrid({ category, products, paused, grabEnabled, s
           paused={paused}
           grabEnabled={grabEnabled}
           showFrame={showFrames}
+          darkMode={darkMode}
           onSelect={onSelect}
           draggable
           onDragEnd={() => setDraggedCode(null)}

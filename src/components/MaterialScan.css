@@ -1,0 +1,85 @@
+.material-scan {
+  --scan-loop: 12s;
+  position: relative;
+  width: min(100%, var(--layout-frame-width, 220px));
+  margin: 12px 0 14px;
+  color: #fff;
+  font: 8px/1.5 "SFMono-Regular", Consolas, monospace;
+  letter-spacing: .035em;
+  pointer-events: none;
+}
+.material-scan__field {
+  position: absolute;
+  left: -12%;
+  bottom: calc(100% + 12px);
+  width: 124%;
+  height: var(--layout-frame-height, 220px);
+}
+.material-scan__contour { position: absolute; inset: -5%; animation: scan-orbit var(--scan-loop) ease-in-out infinite; }
+.material-scan__contour svg { width: 100%; height: 100%; overflow: visible; }
+.material-scan__contour path { stroke: #fff; stroke-width: .6; opacity: .45; vector-effect: non-scaling-stroke; }
+.material-scan__contour path + path { stroke-dasharray: 2 7; opacity: .28; }
+.material-scan__target { position: absolute; width: 72px; height: 85px; border: 1px solid #ffffff80; animation: scan-track 9s steps(5, end) infinite; }
+.material-scan__target::before, .material-scan__target::after { content: ""; position: absolute; width: 5px; height: 5px; background: #fff; }
+.material-scan__target::before { top: -3px; left: -3px; }
+.material-scan__target::after { bottom: -3px; right: -3px; }
+.material-scan__target span { position: absolute; top: -15px; white-space: nowrap; }
+.material-scan__target i { position: absolute; width: 82px; height: 1px; background: #ffffff80; left: 100%; top: 50%; transform: rotate(-27deg); transform-origin: left; }
+.material-scan__target--primary { top: 20%; left: 16%; }
+.material-scan__target--secondary { bottom: 12%; right: 12%; width: 31px; height: 31px; animation-direction: reverse; animation-duration: 14s; }
+.material-scan__sweep { position: absolute; inset: 12% 0 auto; height: 1px; background: linear-gradient(90deg, transparent, #ffffffb0, transparent); animation: scan-sweep 7s linear infinite; }
+.material-scan__crosshair { position: absolute; left: 55%; top: 30%; font-size: 24px; font-weight: 200; animation: scan-orbit 8s ease-in-out infinite reverse; }
+.material-scan__bonds { position: absolute; right: -2%; bottom: 4%; width: 68px; height: 32px; opacity: .65; }
+.material-scan__bonds path { stroke: #fff; stroke-width: .8; fill: none; }
+.material-scan__bonds text { fill: white; font-size: 8px; }
+.material-scan__photos { position: absolute; bottom: calc(100% + 28px); left: -11%; right: -11%; display: flex; justify-content: space-between; align-items: flex-end; }
+.material-scan__photo { width: 60px; margin: 0; background: #050505; border: 1px solid #ffffff80; animation: scan-photo 11s steps(1, end) infinite; }
+.material-scan__photo img { display: block; width: 100%; height: 68px; object-fit: cover; filter: grayscale(1) contrast(1.15); }
+.material-scan__photo figcaption { padding: 3px; font-size: 6px; white-space: nowrap; }
+.material-scan__photo--detail { align-self: flex-start; transform: translateY(-100px); width: 64px; animation-direction: reverse; }
+.material-scan__photo--detail div { overflow: hidden; height: 48px; }
+.material-scan__photo--detail img { height: 48px; transform: scale(3.5); object-position: 50% 65%; }
+.material-scan__readout { display: flex; flex-direction: column; gap: 3px; border-top: 1px solid #ffffff70; padding-top: 7px; }
+.material-scan__status { display: flex; justify-content: space-between; color: #a0a0a0; font-size: 7px; margin-bottom: 4px; }
+.material-scan__readout strong { font-size: 10px; font-weight: 500; letter-spacing: .08em; }
+.material-scan__formula { font-size: 13px; letter-spacing: -.02em; }
+.material-scan__material { color: #aaa; margin-top: 3px; font-size: 9px; }
+.material-scan__readout small { font-size: 6px; color: #888; letter-spacing: .025em; }
+.material-scan [class*="material-scan__"] { animation-delay: var(--scan-phase); animation-play-state: paused; }
+.material-scan[data-running="true"] [class*="material-scan__"] { animation-play-state: running; }
+.page[data-dark-mode="true"] .product-card__name { color: #fff; }
+.page[data-dark-mode="true"] .product-card__object { filter: grayscale(1); }
+.page[data-dark-mode="true"] .product-card { position: relative; }
+
+@keyframes scan-orbit {
+  0%, 100% { transform: translate(-5px, 0) rotate(-8deg) scale(.94, 1.04); }
+  33% { transform: translate(9px, -8px) rotate(5deg) scale(1.04, .94); }
+  66% { transform: translate(-7px, 7px) rotate(12deg) scale(.96, 1.02); }
+}
+@keyframes scan-track {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(38px, 13px) scale(.72, 1.15); }
+  50% { transform: translate(6px, 55px) scale(1.2, .65); }
+  75% { transform: translate(-17px, 23px) scale(.85); }
+}
+@keyframes scan-sweep {
+  0% { transform: translateY(0); opacity: 0; }
+  12%, 85% { opacity: .7; }
+  100% { transform: translateY(170px); opacity: 0; }
+}
+@keyframes scan-photo {
+  0%, 100% { opacity: .9; translate: 0 0; }
+  42% { opacity: .9; translate: 0 0; }
+  43% { opacity: .4; translate: 4px -2px; }
+  45% { opacity: .9; translate: -2px 1px; }
+  47% { opacity: .9; translate: 0 0; }
+  76% { opacity: .65; translate: 2px 0; }
+  78% { opacity: .9; translate: 0 0; }
+}
+@media (pointer: coarse) {
+  .material-scan__contour { animation-duration: 18s; }
+  .material-scan__target--secondary, .material-scan__crosshair { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .material-scan [class*="material-scan__"] { animation: none; }
+}
