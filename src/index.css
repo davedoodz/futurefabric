@@ -341,11 +341,11 @@ body.modal-open .custom-cursor:not(.custom-cursor--modal) {
 
 .category-tab {
   position: relative;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(var(--pill-icon-size, 12px), 1fr) auto minmax(var(--pill-icon-size, 12px), 1fr);
   align-items: center;
-  justify-content: center;
+  justify-items: center;
   column-gap: var(--pill-content-gap, 8px);
-  flex-shrink: 0;
   min-height: 0;
   white-space: nowrap;
   text-align: center;
@@ -357,21 +357,23 @@ body.modal-open .custom-cursor:not(.custom-cursor--modal) {
   font-size: var(--pill-font-size, 14px);
   font-weight: var(--pill-font-weight, 400);
   letter-spacing: var(--pill-letter-spacing, -0.08em);
-  padding: 16px var(--pill-padding, 8px);
+  padding: var(--pill-padding-y, 8px) var(--pill-padding-x, 16px);
   cursor: pointer;
   pointer-events: auto;
 }
 
 .category-tab > svg {
+  grid-column: 1;
+  justify-self: start;
   position: static;
-  flex: 0 0 var(--pill-icon-size, 12px);
+  flex: none;
 }
 
 .category-tab__label {
   display: block;
+  grid-column: 2;
   width: auto;
   text-align: center;
-  transform: translateX(var(--pill-text-x, 0px));
 }
 .category-tabs[data-orientation="vertical"] .category-tab {
   writing-mode: vertical-rl;
@@ -379,7 +381,7 @@ body.modal-open .custom-cursor:not(.custom-cursor--modal) {
 }
 
 .category-tabs[data-orientation="horizontal"] .category-tab {
-  padding: 6px var(--pill-padding, 8px);
+  padding: var(--pill-padding-y, 8px) var(--pill-padding-x, 16px);
 }
 .category-tab[data-active="true"] {
   background: #000000;
@@ -500,9 +502,9 @@ body.modal-open .custom-cursor:not(.custom-cursor--modal) {
 
 .product-card__code {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--layout-product-code-size, 14px);
   letter-spacing: var(--layout-letter-spacing, -0.08em);
-  color: var(--color-mist);
+  color: var(--layout-product-code-color, var(--color-mist));
 }
 
 .product-card__name {
@@ -512,6 +514,7 @@ body.modal-open .custom-cursor:not(.custom-cursor--modal) {
   font-weight: 600;
   line-height: var(--layout-line-height, 1.1);
   letter-spacing: var(--layout-product-name-letter-spacing, -0.08em);
+  color: var(--layout-product-name-color, var(--color-ink));
   white-space: normal;
   overflow: visible;
   text-wrap: balance;
@@ -519,6 +522,9 @@ body.modal-open .custom-cursor:not(.custom-cursor--modal) {
 
 .product-card__companies {
   margin: var(--layout-product-title-subtitle-gap, 8px) 0 0;
+  font-size: var(--layout-product-company-size, 18px);
+  letter-spacing: var(--layout-letter-spacing, -0.08em);
+  color: var(--layout-product-company-color, var(--color-mist));
 }
 .product-focus {
   width: 100vw;
