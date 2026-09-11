@@ -11,6 +11,21 @@ function isManagedStorageKey(key: string) {
   return key === COPY_STORAGE_KEY || key.startsWith(DIALKIT_STORAGE_PREFIX) || key.startsWith(ORDER_STORAGE_PREFIX);
 }
 
+export function hasManagedLayoutState() {
+  for (let index = 0; index < window.localStorage.length; index += 1) {
+    const key = window.localStorage.key(index);
+    if (key && isManagedStorageKey(key)) return true;
+  }
+
+  return false;
+}
+
+let sharedLayoutSavingEnabled = true;
+
+export function setSharedLayoutSavingEnabled(enabled: boolean) {
+  sharedLayoutSavingEnabled = enabled;
+}
+
 function collectStorage() {
   const storage: Record<string, string> = {};
 
@@ -50,6 +65,8 @@ export async function hydrateSharedLayout() {
 let saveTimer: number | undefined;
 
 export function scheduleSharedLayoutSave() {
+  if (!sharedLayoutSavingEnabled) return;
+
   window.clearTimeout(saveTimer);
   saveTimer = window.setTimeout(() => {
     void saveSharedLayout();
@@ -57,6 +74,8 @@ export function scheduleSharedLayoutSave() {
 }
 
 export async function saveSharedLayout() {
+  if (!sharedLayoutSavingEnabled) return;
+
   try {
     const payload: LayoutPayload = { version: 1, storage: collectStorage() };
     await fetch("/api/layout", {
