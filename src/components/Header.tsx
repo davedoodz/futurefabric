@@ -56,7 +56,7 @@ export default function Header({ darkMode, onToggleDarkMode }: { darkMode: boole
         <span
           className="site-header__title-text"
           style={{
-            fontSize: `${titleText.size}px`,
+            fontSize: `min(${titleText.size}px, 13vw)`,
             transform: `translate3d(${titleText.x}px, ${titleText.y}px, 0)`,
           }}
         >

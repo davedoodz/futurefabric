@@ -95,7 +95,7 @@ export default function App() {
   return (
     <CopyProvider editingEnabled={interfaceControls.textEditing}>
       <div className="page" data-dark-mode={darkMode} style={layoutStyle}>
-        <DialRoot defaultOpen productionEnabled />
+        <DialRoot defaultOpen={false} productionEnabled />
         <SaveAllButton />
         <CustomCursor />
         <main className="page__content">
