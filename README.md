@@ -1,16 +1,5 @@
 # FutureFabric
 
-```
-      .  *  .    ~  biomaterial catalog  ~    .  *  .
-          __
-       .-'  `-.        /\    cellulose
-      /  o    o \      \/      |
-     |    __      |    /\    chitin
-      \  '--'    /     \/      |
-       `-.____.-'      /\    protein
-        ./||\.          \/
-```
-
 An open-source catalog of bio-based fashion apparel — real garments, real brands, real material chemistry, browsable as an interactive sprite-animated grid.
 
 **[Live](https://futurefabric-beryl.vercel.app)**
